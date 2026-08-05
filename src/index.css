@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-color: #F5F5F7;
+    --card-bg: #FFFFFF;
+    --border-color: #E5E5EA;
+    --text-main: #111827;
+    --text-sec: #6E6E73;
+    --text-ter: #9CA3AF;
+    --accent: #0A84FF;
+  }
+  
+  html.dark {
+    --bg-color: #000000;
+    --card-bg: #1C1C1E;
+    --border-color: #2C2C2E;
+    --text-main: #F9FAFB;
+    --text-sec: #9CA3AF;
+    --text-ter: #6B7280;
+    --accent: #0A84FF;
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    transition: background-color 0.2s ease-out, color 0.2s ease-out;
+  }
+
+  /* Eliminar focus styles agresivos por defecto en inputs */
+  input, select, textarea {
+    @apply bg-transparent outline-none ring-0;
+  }
+}
+
+@layer utilities {
+  .premium-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    @apply rounded-[20px] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-200 ease-out;
+  }
+  
+  .grouped-list-item {
+    border-bottom: 1px solid var(--border-color);
+    @apply transition-colors duration-200 active:bg-gray-50 dark:active:bg-[#2C2C2E];
+  }
+  
+  .grouped-list-item:last-child {
+    border-bottom: none;
+  }
+
+  .text-premium-label {
+    @apply text-[13px] font-semibold tracking-wider uppercase;
+    color: var(--text-sec);
+  }
+
+  @keyframes slideFade {
+    from { 
+      opacity: 0;
+      transform: translateX(8px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .animate-fade-in {
+    animation: slideFade 300ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+}
