@@ -206,21 +206,23 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
     doc.text(capitalizedDateStr, colDia, y)
 
     if (paymentType === 'daily') {
+      const hasWorked = log.worked_day !== false
+      
       // Col A: Jornal base
       doc.setFont('helvetica', 'normal')
       doc.setTextColor(...colorMidGray)
-      doc.text(formatCurrency(profile.daily_rate ?? 0), colA, y)
+      doc.text(hasWorked ? formatCurrency(profile.daily_rate ?? 0) : '—', colA, y)
 
       // Col B: Horas extra
       doc.setFont('helvetica', 'normal')
       doc.setTextColor(...colorDarkGray)
-      const extraText = log.worked_extra && (log.extra_hours ?? 0) > 0
+      const extraText = hasWorked && log.worked_extra && (log.extra_hours ?? 0) > 0
         ? `+${log.extra_hours}h`
         : '—'
       doc.text(extraText, colB, y)
 
       // Col C: Total del día
-      const dailyTotal = (profile.daily_rate ?? 0) + ((log.worked_extra ? log.extra_hours ?? 0 : 0) * (profile.overtime_rate ?? 0))
+      const dailyTotal = hasWorked ? (profile.daily_rate ?? 0) + ((log.worked_extra ? log.extra_hours ?? 0 : 0) * (profile.overtime_rate ?? 0)) : 0
       doc.setFont('helvetica', 'bold')
       doc.setTextColor(...colorDarkGray)
       doc.text(formatCurrency(dailyTotal), colC, y, { align: 'right' })

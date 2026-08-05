@@ -27,9 +27,9 @@ export function TodayCard({ log, profile, onClick }: TodayCardProps) {
   // ── Daily mode ───────────────────────────────────────────────────────────────
   const isRegisteredDaily = !!log
 
-  const extraHours = log?.worked_extra ? (log?.extra_hours ?? 0) : 0
+  const extraHours = log?.worked_day !== false && log?.worked_extra ? (log?.extra_hours ?? 0) : 0
   const dailyTotal = paymentType === 'daily' && isRegisteredDaily
-    ? (profile?.daily_rate ?? 0) + extraHours * (profile?.overtime_rate ?? 0)
+    ? (log?.worked_day !== false ? (profile?.daily_rate ?? 0) : 0) + extraHours * (profile?.overtime_rate ?? 0)
     : 0
 
   // ── Shared ───────────────────────────────────────────────────────────────────

@@ -6,6 +6,7 @@ export interface WorkLog {
   end_time: string | null // HH:mm
   break_minutes: number | null
   worked_minutes: number
+  worked_day?: boolean
   worked_extra?: boolean
   extra_hours?: number
   notes?: string

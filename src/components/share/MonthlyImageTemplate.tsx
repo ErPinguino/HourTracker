@@ -95,13 +95,14 @@ export const MonthlyImageTemplate = React.forwardRef<HTMLDivElement, Props>(({ m
              const capitalizedDay = dayStr.charAt(0).toUpperCase() + dayStr.slice(1)
              
              if (paymentType === 'daily') {
-               const dailyTotal = (profile.daily_rate ?? 0) + ((log.worked_extra ? log.extra_hours ?? 0 : 0) * (profile.overtime_rate ?? 0))
+               const hasWorked = log.worked_day !== false
+               const dailyTotal = hasWorked ? (profile.daily_rate ?? 0) + ((log.worked_extra ? log.extra_hours ?? 0 : 0) * (profile.overtime_rate ?? 0)) : 0
                return (
                  <div key={log.id} className="flex w-full justify-between items-center text-[28px]">
                    <span className="text-gray-900 font-semibold w-1/4">{capitalizedDay}</span>
-                   <span className="text-gray-500 font-medium w-1/4 text-center">{formatCurrency(profile.daily_rate ?? 0)}</span>
+                   <span className="text-gray-500 font-medium w-1/4 text-center">{hasWorked ? formatCurrency(profile.daily_rate ?? 0) : '—'}</span>
                    <span className="text-gray-500 font-medium w-1/4 text-center">
-                     {log.worked_extra && (log.extra_hours ?? 0) > 0 ? `+${log.extra_hours}h` : '—'}
+                     {hasWorked && log.worked_extra && (log.extra_hours ?? 0) > 0 ? `+${log.extra_hours}h` : '—'}
                    </span>
                    <span className="text-gray-900 font-bold w-1/4 text-right">{formatCurrency(dailyTotal)}</span>
                  </div>

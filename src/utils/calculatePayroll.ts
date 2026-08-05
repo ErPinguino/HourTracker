@@ -95,13 +95,13 @@ function calculateDaily(workLogs: WorkLog[], profile: Profile): PayrollResult {
   const dailyRate = profile.daily_rate ?? 0
   const overtimeRate = profile.overtime_rate ?? 0
 
-  const workedDays = workLogs.length
-  // totalJornales = days with a log entry (every log = 1 jornada)
+  const workedDays = workLogs.filter(log => log.worked_day !== false).length
+  // totalJornales = days with a log entry and worked_day is not false
   const totalJornales = workedDays
 
   let totalExtraHours = 0
   for (const log of workLogs) {
-    if (log.worked_extra) {
+    if (log.worked_day !== false && log.worked_extra) {
       totalExtraHours += log.extra_hours ?? 0
     }
   }

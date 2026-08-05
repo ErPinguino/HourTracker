@@ -55,6 +55,7 @@ export function Day() {
       start_time: data.payment_type === 'hourly' ? data.start_time : null,
       end_time: data.payment_type === 'hourly' ? data.end_time : null,
       break_minutes: data.payment_type === 'hourly' ? data.break_minutes : null,
+      worked_day: data.payment_type === 'daily' ? data.worked_day : true,
       worked_extra: data.payment_type === 'daily' ? (data.worked_extra ?? false) : false,
       extra_hours: data.payment_type === 'daily' ? (data.extra_hours ?? 0) : 0,
       worked_minutes: workedMinutes,

@@ -35,11 +35,12 @@ const hourlySchema = z.object({
 })
 
 const dailySchema = z.object({
+  worked_day: z.boolean(),
   worked_extra: z.boolean(),
   extra_hours: z.number().optional(),
   notes: z.string().optional(),
 }).refine(data => {
-  if (!data.worked_extra) return true
+  if (!data.worked_day || !data.worked_extra) return true
   return (data.extra_hours ?? 0) > 0
 }, {
   message: 'Indica las horas extra (mayor que 0)',
@@ -242,11 +243,13 @@ function DailyForm({
     handleSubmit,
     reset,
     control,
+    setValue,
     formState: { errors },
   } = useForm<DailyFormValues>({
     resolver: zodResolver(dailySchema),
     mode: 'onSubmit',
     defaultValues: {
+      worked_day: initialData.worked_day ?? true,
       worked_extra: initialData.worked_extra ?? false,
       extra_hours: initialData.extra_hours || undefined,
       notes: initialData.notes || '',
@@ -270,13 +273,24 @@ function DailyForm({
 
   useEffect(() => {
     reset({
+      worked_day: initialData.worked_day ?? true,
       worked_extra: initialData.worked_extra ?? false,
       extra_hours: initialData.extra_hours || undefined,
       notes: initialData.notes || '',
     })
   }, [initialData, reset])
 
+  const workedDay = useWatch({ control, name: 'worked_day' })
   const workedExtra = useWatch({ control, name: 'worked_extra' })
+
+  useEffect(() => {
+    if (!workedDay) {
+      setValue('worked_extra', false)
+      setValue('extra_hours', undefined)
+    } else if (!workedExtra) {
+      setValue('extra_hours', undefined)
+    }
+  }, [workedDay, workedExtra, setValue])
 
   const handleFormSubmit = (data: DailyFormValues) => {
     onSubmit(data, 0)
@@ -288,18 +302,32 @@ function DailyForm({
 
         <div className="premium-card overflow-hidden">
           <div className="grouped-list-item px-4 py-3.5 flex items-center justify-between">
-            <span className="text-[17px] text-main">¿Horas extra hoy?</span>
+            <span className="text-[17px] text-main">¿Ha trabajado hoy?</span>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
                 className="sr-only peer"
-                {...register('worked_extra')}
+                {...register('worked_day')}
               />
               <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
             </label>
           </div>
+          
+          {workedDay && (
+            <div className="grouped-list-item px-4 py-3.5 flex items-center justify-between border-t border-border/40">
+              <span className="text-[17px] text-main">¿Horas extra hoy?</span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  {...register('worked_extra')}
+                />
+                <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+              </label>
+            </div>
+          )}
 
-          {workedExtra && (
+          {workedDay && workedExtra && (
             <div className="grouped-list-item px-4 py-3.5 flex items-center justify-between border-t border-border/40">
               <span className="text-[17px] text-main">Cantidad (horas)</span>
               <div className="flex flex-col items-end">
