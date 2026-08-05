@@ -99,7 +99,8 @@ export function Home() {
 
   const todayStr = format(new Date(), 'yyyy-MM-dd')
   const todayLog = workLogs.find(log => log.date === todayStr)
-  const userName = user?.user_metadata?.full_name?.split(' ')[0] || 'Hola'
+  const googleName = user?.user_metadata?.full_name?.split(' ')[0]
+  const userName = profile?.worker_name || googleName || 'Trabajador'
   const userAvatar = user?.user_metadata?.avatar_url
   const userInitial = userName.charAt(0).toUpperCase()
 
