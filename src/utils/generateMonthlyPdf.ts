@@ -228,7 +228,7 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
       // Col A: Jornada horaria
       doc.setFont('helvetica', 'normal')
       doc.setTextColor(...colorMidGray)
-      doc.text(`${log.start_time.slice(0, 5)} - ${log.end_time.slice(0, 5)}`, colA, y)
+      doc.text(`${log.start_time?.slice(0, 5) || ''} - ${log.end_time?.slice(0, 5) || ''}`, colA, y)
 
       // Col B: Total horas
       doc.setFont('helvetica', 'bold')

@@ -2,9 +2,9 @@ export interface WorkLog {
   id?: string
   user_id?: string
   date: string // YYYY-MM-DD
-  start_time: string // HH:mm
-  end_time: string // HH:mm
-  break_minutes: number
+  start_time: string | null // HH:mm
+  end_time: string | null // HH:mm
+  break_minutes: number | null
   worked_minutes: number
   worked_extra?: boolean
   extra_hours?: number

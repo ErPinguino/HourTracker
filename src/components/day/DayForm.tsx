@@ -60,6 +60,8 @@ interface DayFormProps {
   paymentType: 'hourly' | 'daily'
   onSubmit: (data: FormValues, workedMinutes: number) => void
   isPending: boolean
+  isSuccess?: boolean
+  isError?: boolean
 }
 
 // ─── Sub-forms ────────────────────────────────────────────────────────────────
@@ -68,12 +70,17 @@ function HourlyForm({
   initialData,
   onSubmit,
   isPending,
+  isSuccess,
+  isError,
 }: {
   initialData: Partial<WorkLog>
   onSubmit: (data: HourlyFormValues, workedMinutes: number) => void
   isPending: boolean
+  isSuccess?: boolean
+  isError?: boolean
 }) {
   const [showSuccess, setShowSuccess] = useState(false)
+  const [showError, setShowError] = useState(false)
   const [prevPending, setPrevPending] = useState(isPending)
 
   const {
@@ -95,12 +102,18 @@ function HourlyForm({
 
   useEffect(() => {
     if (prevPending && !isPending) {
-      setShowSuccess(true)
-      const t = setTimeout(() => setShowSuccess(false), 2000)
-      return () => clearTimeout(t)
+      if (isSuccess) {
+        setShowSuccess(true)
+        const t = setTimeout(() => setShowSuccess(false), 2000)
+        return () => clearTimeout(t)
+      } else if (isError) {
+        setShowError(true)
+        const t = setTimeout(() => setShowError(false), 3000)
+        return () => clearTimeout(t)
+      }
     }
     setPrevPending(isPending)
-  }, [isPending, prevPending])
+  }, [isPending, prevPending, isSuccess, isError])
 
   useEffect(() => {
     reset({
@@ -200,8 +213,8 @@ function HourlyForm({
         </Button>
       </div>
 
-      <div className={`fixed top-6 right-4 z-50 flex items-center space-x-2 bg-main/90 backdrop-blur text-card px-4 py-2.5 rounded-full text-[14px] font-medium shadow-lg transition-all duration-300 transform ${isPending || showSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
-        {isPending ? <span>Guardando...</span> : showSuccess ? <><Check size={16} className="text-[#34C759]" /><span>Guardado</span></> : null}
+      <div className={`fixed top-6 right-4 z-50 flex items-center space-x-2 bg-main/90 backdrop-blur text-card px-4 py-2.5 rounded-full text-[14px] font-medium shadow-lg transition-all duration-300 transform ${isPending || showSuccess || showError ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'} ${showError ? 'bg-red-500 text-white' : ''}`}>
+        {isPending ? <span>Guardando...</span> : showSuccess ? <><Check size={16} className="text-[#34C759]" /><span>Guardado</span></> : showError ? <span>Error al guardar</span> : null}
       </div>
     </form>
   )
@@ -211,12 +224,17 @@ function DailyForm({
   initialData,
   onSubmit,
   isPending,
+  isSuccess,
+  isError,
 }: {
   initialData: Partial<WorkLog>
   onSubmit: (data: DailyFormValues, workedMinutes: number) => void
   isPending: boolean
+  isSuccess?: boolean
+  isError?: boolean
 }) {
   const [showSuccess, setShowSuccess] = useState(false)
+  const [showError, setShowError] = useState(false)
   const [prevPending, setPrevPending] = useState(isPending)
 
   const {
@@ -237,12 +255,18 @@ function DailyForm({
 
   useEffect(() => {
     if (prevPending && !isPending) {
-      setShowSuccess(true)
-      const t = setTimeout(() => setShowSuccess(false), 2000)
-      return () => clearTimeout(t)
+      if (isSuccess) {
+        setShowSuccess(true)
+        const t = setTimeout(() => setShowSuccess(false), 2000)
+        return () => clearTimeout(t)
+      } else if (isError) {
+        setShowError(true)
+        const t = setTimeout(() => setShowError(false), 3000)
+        return () => clearTimeout(t)
+      }
     }
     setPrevPending(isPending)
-  }, [isPending, prevPending])
+  }, [isPending, prevPending, isSuccess, isError])
 
   useEffect(() => {
     reset({
@@ -319,8 +343,8 @@ function DailyForm({
         </Button>
       </div>
 
-      <div className={`fixed top-6 right-4 z-50 flex items-center space-x-2 bg-main/90 backdrop-blur text-card px-4 py-2.5 rounded-full text-[14px] font-medium shadow-lg transition-all duration-300 transform ${isPending || showSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
-        {isPending ? <span>Guardando...</span> : showSuccess ? <><Check size={16} className="text-[#34C759]" /><span>Guardado</span></> : null}
+      <div className={`fixed top-6 right-4 z-50 flex items-center space-x-2 bg-main/90 backdrop-blur text-card px-4 py-2.5 rounded-full text-[14px] font-medium shadow-lg transition-all duration-300 transform ${isPending || showSuccess || showError ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'} ${showError ? 'bg-red-500 text-white' : ''}`}>
+        {isPending ? <span>Guardando...</span> : showSuccess ? <><Check size={16} className="text-[#34C759]" /><span>Guardado</span></> : showError ? <span>Error al guardar</span> : null}
       </div>
     </form>
   )
@@ -328,12 +352,14 @@ function DailyForm({
 
 // ─── Orchestrator ─────────────────────────────────────────────────────────────
 
-export function DayForm({ initialData, paymentType, onSubmit, isPending }: DayFormProps) {
+export function DayForm({ initialData, paymentType, onSubmit, isPending, isSuccess, isError }: DayFormProps) {
   if (paymentType === 'daily') {
     return (
       <DailyForm
         initialData={initialData}
         isPending={isPending}
+        isSuccess={isSuccess}
+        isError={isError}
         onSubmit={(data, workedMinutes) =>
           onSubmit({ payment_type: 'daily', ...data }, workedMinutes)
         }
@@ -345,6 +371,8 @@ export function DayForm({ initialData, paymentType, onSubmit, isPending }: DayFo
     <HourlyForm
       initialData={initialData}
       isPending={isPending}
+      isSuccess={isSuccess}
+      isError={isError}
       onSubmit={(data, workedMinutes) =>
         onSubmit({ payment_type: 'hourly', ...data }, workedMinutes)
       }

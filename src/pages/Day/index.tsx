@@ -36,25 +36,29 @@ export function Day() {
 
   const mutation = useMutation({
     mutationFn: (newLog: WorkLog) => upsertWorkLog(newLog),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workLogs'] })
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ['workLogs'] })
+      await queryClient.refetchQueries({ queryKey: ['workLog', date] })
       setTimeout(() => {
         navigate(-1)
       }, 700)
     },
+    onError: (error) => {
+      console.error('Error al guardar el registro:', error)
+    }
   })
 
   const handleSubmit = (data: FormValues, workedMinutes: number) => {
     mutation.mutate({
       ...initialData,
       date: date!,
-      start_time: data.payment_type === 'hourly' ? data.start_time : '',
-      end_time: data.payment_type === 'hourly' ? data.end_time : '',
-      break_minutes: data.payment_type === 'hourly' ? data.break_minutes : 0,
+      start_time: data.payment_type === 'hourly' ? data.start_time : null,
+      end_time: data.payment_type === 'hourly' ? data.end_time : null,
+      break_minutes: data.payment_type === 'hourly' ? data.break_minutes : null,
       worked_extra: data.payment_type === 'daily' ? (data.worked_extra ?? false) : false,
       extra_hours: data.payment_type === 'daily' ? (data.extra_hours ?? 0) : 0,
       worked_minutes: workedMinutes,
-      notes: data.notes,
+      notes: data.notes || '',
     })
   }
 
@@ -86,6 +90,8 @@ export function Day() {
           paymentType={profile?.payment_type || 'hourly'}
           onSubmit={handleSubmit}
           isPending={mutation.isPending}
+          isSuccess={mutation.isSuccess}
+          isError={mutation.isError}
         />
       </div>
     </div>

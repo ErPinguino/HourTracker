@@ -21,7 +21,7 @@ export function TodayCard({ log, profile, onClick }: TodayCardProps) {
 
   let workedMinutes = 0
   if (paymentType === 'hourly' && isRegisteredHourly) {
-    workedMinutes = calculateWorkedMinutes(log!.start_time, log!.end_time, log!.break_minutes)
+    workedMinutes = calculateWorkedMinutes(log!.start_time!, log!.end_time!, log!.break_minutes ?? 0)
   }
 
   // ── Daily mode ───────────────────────────────────────────────────────────────
