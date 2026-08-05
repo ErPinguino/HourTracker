@@ -14,12 +14,13 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
   const marginLeft = 24
   const rightMargin = pageWidth - 24
   
-  // Apple HIG inspired Colors
   const colorBlue = [10, 132, 255] as [number, number, number]
   const colorDarkGray = [17, 24, 39] as [number, number, number]
   const colorMidGray = [107, 114, 128] as [number, number, number]
   const colorLightGray = [156, 163, 175] as [number, number, number]
   const colorDivider = [229, 231, 235] as [number, number, number]
+
+  const paymentType = profile.payment_type ?? 'hourly'
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('es-ES', { 
@@ -32,34 +33,44 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
   const sortedLogs = [...workLogs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   const payroll = calculatePayroll(sortedLogs, profile)
 
-  // Columnas de la tabla (Día, Jornada, Total, Ganado)
+  // Columnas de la tabla varían según el tipo de trabajador
   const colDia = marginLeft
-  const colJornada = marginLeft + 35
-  const colTotal = marginLeft + 95
-  const colGanado = rightMargin
+  let colA: number, colB: number, colC: number, headerA: string, headerB: string, headerC: string
+
+  if (paymentType === 'daily') {
+    colA = marginLeft + 35
+    colB = marginLeft + 90
+    colC = rightMargin
+    headerA = 'Jornal'
+    headerB = 'Extra'
+    headerC = 'Total'
+  } else {
+    colA = marginLeft + 35
+    colB = marginLeft + 95
+    colC = rightMargin
+    headerA = 'Jornada'
+    headerB = 'Total'
+    headerC = 'Ganado'
+  }
 
   const drawPageHeader = (d: typeof doc, isFirstPage: boolean) => {
     let y = 35
     
-    // Título HourTrack
     d.setFontSize(24)
     d.setFont('helvetica', 'bold')
     d.setTextColor(...colorBlue)
     d.text('HourTrack', centerX, y, { align: 'center' })
     
-    // Nombre Trabajador
     y += 10
     d.setFontSize(14)
     d.setFont('helvetica', 'normal')
     d.setTextColor(...colorMidGray)
     d.text(profile.worker_name || 'Trabajador', centerX, y, { align: 'center' })
     
-    // Subtítulo
     y += 10
     d.setFontSize(12)
     d.text('Resumen mensual', centerX, y, { align: 'center' })
     
-    // Mes
     y += 12
     const monthString = format(month, 'MMMM yyyy', { locale: es })
     const capitalizedMonth = monthString.charAt(0).toUpperCase() + monthString.slice(1)
@@ -71,7 +82,6 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
     y += 24
 
     if (isFirstPage && sortedLogs.length > 0) {
-      // TOTAL GANADO (Protagonista absoluto)
       d.setFontSize(11)
       d.setFont('helvetica', 'bold')
       d.setTextColor(...colorMidGray)
@@ -87,12 +97,18 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
       d.setFontSize(12)
       d.setFont('helvetica', 'normal')
       d.setTextColor(...colorMidGray)
-      const extraInfo = `${formatWorkedMinutes(payroll.regularMinutes)} normales • ${formatWorkedMinutes(payroll.overtimeMinutes)} extras`
+
+      let extraInfo: string
+      if (paymentType === 'daily') {
+        const extraStr = payroll.totalExtraHours > 0 ? ` • ${payroll.totalExtraHours}h extra` : ''
+        extraInfo = `${payroll.totalJornales} jornales${extraStr}`
+      } else {
+        extraInfo = `${formatWorkedMinutes(payroll.regularMinutes)} normales • ${formatWorkedMinutes(payroll.overtimeMinutes)} extras`
+      }
       d.text(extraInfo, centerX, y, { align: 'center' })
       
       y += 28
       
-      // Fila de Indicadores Fluidos
       d.setFontSize(10)
       d.setFont('helvetica', 'normal')
       d.setTextColor(...colorLightGray)
@@ -100,19 +116,32 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
       const col1 = pageWidth * 0.25
       const col2 = pageWidth * 0.50
       const col3 = pageWidth * 0.75
-      
-      d.text('Días trabajados', col1, y, { align: 'center' })
-      d.text('Horas normales', col2, y, { align: 'center' })
-      d.text('Horas extra', col3, y, { align: 'center' })
-      
-      y += 8
-      d.setFontSize(14)
-      d.setFont('helvetica', 'bold')
-      d.setTextColor(...colorDarkGray)
-      
-      d.text(payroll.workedDays.toString(), col1, y, { align: 'center' })
-      d.text(formatWorkedMinutes(payroll.regularMinutes), col2, y, { align: 'center' })
-      d.text(formatWorkedMinutes(payroll.overtimeMinutes), col3, y, { align: 'center' })
+
+      if (paymentType === 'daily') {
+        d.text('Jornales', col1, y, { align: 'center' })
+        d.text('Horas extra', col2, y, { align: 'center' })
+        d.text('Total', col3, y, { align: 'center' })
+
+        y += 8
+        d.setFontSize(14)
+        d.setFont('helvetica', 'bold')
+        d.setTextColor(...colorDarkGray)
+        d.text(payroll.totalJornales.toString(), col1, y, { align: 'center' })
+        d.text(payroll.totalExtraHours > 0 ? `${payroll.totalExtraHours}h` : '—', col2, y, { align: 'center' })
+        d.text(formatCurrency(payroll.totalPay), col3, y, { align: 'center' })
+      } else {
+        d.text('Días trabajados', col1, y, { align: 'center' })
+        d.text('Horas normales', col2, y, { align: 'center' })
+        d.text('Horas extra', col3, y, { align: 'center' })
+
+        y += 8
+        d.setFontSize(14)
+        d.setFont('helvetica', 'bold')
+        d.setTextColor(...colorDarkGray)
+        d.text(payroll.workedDays.toString(), col1, y, { align: 'center' })
+        d.text(formatWorkedMinutes(payroll.regularMinutes), col2, y, { align: 'center' })
+        d.text(formatWorkedMinutes(payroll.overtimeMinutes), col3, y, { align: 'center' })
+      }
       
       y += 30
     } else if (!isFirstPage) {
@@ -120,18 +149,16 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
     }
 
     if (sortedLogs.length > 0) {
-      // Cabecera de Tabla Premium
       d.setFontSize(10)
       d.setFont('helvetica', 'bold')
       d.setTextColor(...colorMidGray)
       
       d.text('Día', colDia, y)
-      d.text('Jornada', colJornada, y)
-      d.text('Total', colTotal, y)
-      d.text('Ganado', colGanado, y, { align: 'right' })
+      d.text(headerA, colA, y)
+      d.text(headerB, colB, y)
+      d.text(headerC, colC, y, { align: 'right' })
       
       y += 6
-      // Línea divisoria muy ligera
       d.setDrawColor(...colorDivider)
       d.setLineWidth(0.5)
       d.line(marginLeft, y, rightMargin, y)
@@ -155,8 +182,7 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
     doc.setFontSize(12)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...colorMidGray)
-    const emptyText = 'No existen registros para este mes.'
-    doc.text(emptyText, centerX, y + 20, { align: 'center' })
+    doc.text('No existen registros para este mes.', centerX, y + 20, { align: 'center' })
     drawFooter(doc)
     return doc
   }
@@ -175,29 +201,49 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
     const dateStr = format(dateObj, 'dd MMM', { locale: es })
     const capitalizedDateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
 
-    // Columna Día
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(...colorMidGray)
     doc.text(capitalizedDateStr, colDia, y)
 
-    // Columna Jornada
-    doc.setFont('helvetica', 'normal')
-    doc.text(`${log.start_time.slice(0, 5)} - ${log.end_time.slice(0, 5)}`, colJornada, y)
+    if (paymentType === 'daily') {
+      // Col A: Jornal base
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(...colorMidGray)
+      doc.text(formatCurrency(profile.daily_rate ?? 0), colA, y)
 
-    // Columna Total
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colorDarkGray)
-    doc.text(formatWorkedMinutes(log.worked_minutes), colTotal, y)
+      // Col B: Horas extra
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(...colorDarkGray)
+      const extraText = log.worked_extra && (log.extra_hours ?? 0) > 0
+        ? `+${log.extra_hours}h`
+        : '—'
+      doc.text(extraText, colB, y)
 
-    // Columna Ganado (reutilizando motor de nómina para 1 día)
-    const dailyPayroll = calculatePayroll([log], profile)
-    doc.setTextColor(...colorMidGray)
-    doc.text(formatCurrency(dailyPayroll.totalPay), colGanado, y, { align: 'right' })
+      // Col C: Total del día
+      const dailyTotal = (profile.daily_rate ?? 0) + ((log.worked_extra ? log.extra_hours ?? 0 : 0) * (profile.overtime_rate ?? 0))
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...colorDarkGray)
+      doc.text(formatCurrency(dailyTotal), colC, y, { align: 'right' })
+    } else {
+      // Col A: Jornada horaria
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(...colorMidGray)
+      doc.text(`${log.start_time.slice(0, 5)} - ${log.end_time.slice(0, 5)}`, colA, y)
 
-    y += 16 // Muchísimo aire entre filas, sin líneas
+      // Col B: Total horas
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...colorDarkGray)
+      doc.text(formatWorkedMinutes(log.worked_minutes), colB, y)
+
+      // Col C: Ganado
+      const dailyPayroll = calculatePayroll([log], profile)
+      doc.setTextColor(...colorMidGray)
+      doc.text(formatCurrency(dailyPayroll.totalPay), colC, y, { align: 'right' })
+    }
+
+    y += 16
   })
 
-  // Chequeo de espacio amplio para el resumen económico
   if (y > pageHeight - 80) {
     drawFooter(doc)
     doc.addPage()
@@ -206,46 +252,55 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
 
   y += 10
 
-  // Bloque RESUMEN ECONÓMICO Elegante
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
-  doc.setTextColor(...colorBlue) // Azul como línea importante / título
+  doc.setTextColor(...colorBlue)
   doc.text('RESUMEN ECONÓMICO', centerX, y, { align: 'center' })
 
   y += 16
-  
-  // Fila Horas Normales
-  doc.setFontSize(11)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(...colorMidGray)
-  doc.text('Horas normales', marginLeft, y)
-  
-  doc.text(formatWorkedMinutes(payroll.regularMinutes), centerX, y, { align: 'center' })
-  
-  doc.setTextColor(...colorDarkGray)
-  doc.text(formatCurrency(payroll.regularPay), rightMargin, y, { align: 'right' })
-  
+
+  if (paymentType === 'daily') {
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...colorMidGray)
+    doc.text('Jornales base', marginLeft, y)
+    doc.text(`${payroll.totalJornales} jornales`, centerX, y, { align: 'center' })
+    doc.setTextColor(...colorDarkGray)
+    doc.text(formatCurrency(payroll.jornadaPay), rightMargin, y, { align: 'right' })
+
+    y += 14
+
+    doc.setTextColor(...colorMidGray)
+    doc.text('Horas extra', marginLeft, y)
+    doc.text(payroll.totalExtraHours > 0 ? `${payroll.totalExtraHours}h` : '—', centerX, y, { align: 'center' })
+    doc.setTextColor(...colorDarkGray)
+    doc.text(formatCurrency(payroll.overtimePay), rightMargin, y, { align: 'right' })
+  } else {
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...colorMidGray)
+    doc.text('Horas normales', marginLeft, y)
+    doc.text(formatWorkedMinutes(payroll.regularMinutes), centerX, y, { align: 'center' })
+    doc.setTextColor(...colorDarkGray)
+    doc.text(formatCurrency(payroll.regularPay), rightMargin, y, { align: 'right' })
+
+    y += 14
+
+    doc.setTextColor(...colorMidGray)
+    doc.text('Horas extra', marginLeft, y)
+    doc.text(formatWorkedMinutes(payroll.overtimeMinutes), centerX, y, { align: 'center' })
+    doc.setTextColor(...colorDarkGray)
+    doc.text(formatCurrency(payroll.overtimePay), rightMargin, y, { align: 'right' })
+  }
+
   y += 14
-  
-  // Fila Horas Extra
-  doc.setTextColor(...colorMidGray)
-  doc.text('Horas extra', marginLeft, y)
-  
-  doc.text(formatWorkedMinutes(payroll.overtimeMinutes), centerX, y, { align: 'center' })
-  
-  doc.setTextColor(...colorDarkGray)
-  doc.text(formatCurrency(payroll.overtimePay), rightMargin, y, { align: 'right' })
-  
-  y += 14
-  
-  // Separador de Total (Línea Importante en Azul)
+
   doc.setDrawColor(...colorBlue)
   doc.setLineWidth(1.0)
   doc.line(marginLeft, y, rightMargin, y)
   
   y += 16
-  
-  // TOTAL GANADO (Nivel Inferior)
+
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(13)
   doc.setTextColor(...colorDarkGray)

@@ -28,6 +28,8 @@ export function Settings() {
   const handleSubmit = (data: FormValues) => {
     mutation.mutate({
       worker_name: data.worker_name,
+      payment_type: data.payment_type ?? 'hourly',
+      daily_rate: data.daily_rate ?? 0,
       daily_goal_minutes: data.daily_goal_hours * 60,
       default_break_minutes: data.default_break_minutes,
       hourly_rate: data.hourly_rate,

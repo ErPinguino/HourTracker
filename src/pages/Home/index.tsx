@@ -169,6 +169,7 @@ export function Home() {
       <div className="w-full px-6 mb-8">
         <TodayCard 
           log={todayLog} 
+          profile={profile}
           onClick={() => handleSelectDate(new Date())}
         />
       </div>
@@ -200,29 +201,48 @@ export function Home() {
             
             {/* Desglose */}
             <div className="px-5 py-2 flex flex-col">
-              <div className="flex justify-between items-center py-3 border-b border-border/40 last:border-0">
-                <div className="flex items-center space-x-3">
-                  <Clock size={18} className="text-ter" />
-                  <span className="text-[17px] text-sec">Horas trabajadas</span>
-                </div>
-                <span className="text-[17px] text-main font-medium">{formatWorkedMinutes(payroll.totalWorkedMinutes)}</span>
-              </div>
-
-              <div className="flex justify-between items-center py-3 border-b border-border/40 last:border-0">
-                <div className="flex items-center space-x-3">
-                  <CalendarDays size={18} className="text-ter" />
-                  <span className="text-[17px] text-sec">Días registrados</span>
-                </div>
-                <span className="text-[17px] text-main font-medium">{payroll.workedDays}</span>
-              </div>
-              
-              <div className="flex justify-between items-center py-3 border-b border-border/40 last:border-0">
-                <div className="flex items-center space-x-3">
-                  <Activity size={18} className="text-ter" />
-                  <span className="text-[17px] text-sec">Horas extra</span>
-                </div>
-                <span className="text-[17px] text-main font-medium">{formatWorkedMinutes(payroll.overtimeMinutes)}</span>
-              </div>
+              {payroll.paymentType === 'daily' ? (
+                <>
+                  <div className="flex justify-between items-center py-3 border-b border-border/40 last:border-0">
+                    <div className="flex items-center space-x-3">
+                      <CalendarDays size={18} className="text-ter" />
+                      <span className="text-[17px] text-sec">Jornales registrados</span>
+                    </div>
+                    <span className="text-[17px] text-main font-medium">{payroll.totalJornales}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-border/40 last:border-0">
+                    <div className="flex items-center space-x-3">
+                      <Activity size={18} className="text-ter" />
+                      <span className="text-[17px] text-sec">Horas extra</span>
+                    </div>
+                    <span className="text-[17px] text-main font-medium">{payroll.totalExtraHours > 0 ? `${payroll.totalExtraHours}h` : '—'}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between items-center py-3 border-b border-border/40 last:border-0">
+                    <div className="flex items-center space-x-3">
+                      <Clock size={18} className="text-ter" />
+                      <span className="text-[17px] text-sec">Horas trabajadas</span>
+                    </div>
+                    <span className="text-[17px] text-main font-medium">{formatWorkedMinutes(payroll.totalWorkedMinutes)}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-border/40 last:border-0">
+                    <div className="flex items-center space-x-3">
+                      <CalendarDays size={18} className="text-ter" />
+                      <span className="text-[17px] text-sec">Días registrados</span>
+                    </div>
+                    <span className="text-[17px] text-main font-medium">{payroll.workedDays}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-border/40 last:border-0">
+                    <div className="flex items-center space-x-3">
+                      <Activity size={18} className="text-ter" />
+                      <span className="text-[17px] text-sec">Horas extra</span>
+                    </div>
+                    <span className="text-[17px] text-main font-medium">{formatWorkedMinutes(payroll.overtimeMinutes)}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -17,6 +17,7 @@ export const MonthlyImageTemplate = React.forwardRef<HTMLDivElement, Props>(({ m
   
   const sortedLogs = [...workLogs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   const payroll = calculatePayroll(sortedLogs, profile)
+  const paymentType = profile.payment_type ?? 'hourly'
   
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('es-ES', { 
@@ -50,38 +51,71 @@ export const MonthlyImageTemplate = React.forwardRef<HTMLDivElement, Props>(({ m
         <div className="w-full h-px bg-gray-200 mb-14" />
         
         {/* Indicadores */}
-        <div className="flex w-full justify-between items-center mb-14 px-4">
-          <div className="flex flex-col items-center">
-            <span className="text-4xl font-bold text-gray-900 mb-3">{formatWorkedMinutes(payroll.regularMinutes)}</span>
-            <span className="text-2xl text-gray-500">normales</span>
+        {paymentType === 'daily' ? (
+          <div className="flex w-full justify-around items-center mb-14 px-4">
+            <div className="flex flex-col items-center">
+              <span className="text-4xl font-bold text-gray-900 mb-3">{payroll.totalJornales}</span>
+              <span className="text-2xl text-gray-500">jornales</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-4xl font-bold text-gray-900 mb-3">
+                {payroll.totalExtraHours > 0 ? `${payroll.totalExtraHours}h` : '—'}
+              </span>
+              <span className="text-2xl text-gray-500">horas extra</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-4xl font-bold text-gray-900 mb-3">{formatCurrency(payroll.jornadaPay)}</span>
+              <span className="text-2xl text-gray-500">base</span>
+            </div>
           </div>
-          <div className="flex flex-col items-center">
-            <span className="text-4xl font-bold text-gray-900 mb-3">{formatWorkedMinutes(payroll.overtimeMinutes)}</span>
-            <span className="text-2xl text-gray-500">extras</span>
+        ) : (
+          <div className="flex w-full justify-between items-center mb-14 px-4">
+            <div className="flex flex-col items-center">
+              <span className="text-4xl font-bold text-gray-900 mb-3">{formatWorkedMinutes(payroll.regularMinutes)}</span>
+              <span className="text-2xl text-gray-500">normales</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-4xl font-bold text-gray-900 mb-3">{formatWorkedMinutes(payroll.overtimeMinutes)}</span>
+              <span className="text-2xl text-gray-500">extras</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-4xl font-bold text-gray-900 mb-3">{payroll.workedDays}</span>
+              <span className="text-2xl text-gray-500">días</span>
+            </div>
           </div>
-          <div className="flex flex-col items-center">
-            <span className="text-4xl font-bold text-gray-900 mb-3">{payroll.workedDays}</span>
-            <span className="text-2xl text-gray-500">días</span>
-          </div>
-        </div>
+        )}
         
         <div className="w-full h-px bg-gray-200 mb-12" />
         
-        {/* Listado de días (resumen limitado para no desbordar) */}
+        {/* Listado de días */}
         <div className="flex-1 w-full flex flex-col gap-10 overflow-hidden">
           {sortedLogs.slice(0, 6).map(log => {
              const dateObj = new Date(`${log.date}T12:00:00`)
              const dayStr = format(dateObj, 'dd MMM', { locale: es })
              const capitalizedDay = dayStr.charAt(0).toUpperCase() + dayStr.slice(1)
-             const dailyPay = calculatePayroll([log], profile)
              
-             return (
-               <div key={log.id} className="flex w-full justify-between items-center text-[28px]">
-                 <span className="text-gray-900 font-semibold w-1/3">{capitalizedDay}</span>
-                 <span className="text-gray-500 font-medium w-1/3 text-center">{formatWorkedMinutes(log.worked_minutes)}</span>
-                 <span className="text-gray-900 font-bold w-1/3 text-right">{formatCurrency(dailyPay.totalPay)}</span>
-               </div>
-             )
+             if (paymentType === 'daily') {
+               const dailyTotal = (profile.daily_rate ?? 0) + ((log.worked_extra ? log.extra_hours ?? 0 : 0) * (profile.overtime_rate ?? 0))
+               return (
+                 <div key={log.id} className="flex w-full justify-between items-center text-[28px]">
+                   <span className="text-gray-900 font-semibold w-1/4">{capitalizedDay}</span>
+                   <span className="text-gray-500 font-medium w-1/4 text-center">{formatCurrency(profile.daily_rate ?? 0)}</span>
+                   <span className="text-gray-500 font-medium w-1/4 text-center">
+                     {log.worked_extra && (log.extra_hours ?? 0) > 0 ? `+${log.extra_hours}h` : '—'}
+                   </span>
+                   <span className="text-gray-900 font-bold w-1/4 text-right">{formatCurrency(dailyTotal)}</span>
+                 </div>
+               )
+             } else {
+               const dailyPay = calculatePayroll([log], profile)
+               return (
+                 <div key={log.id} className="flex w-full justify-between items-center text-[28px]">
+                   <span className="text-gray-900 font-semibold w-1/3">{capitalizedDay}</span>
+                   <span className="text-gray-500 font-medium w-1/3 text-center">{formatWorkedMinutes(log.worked_minutes)}</span>
+                   <span className="text-gray-900 font-bold w-1/3 text-right">{formatCurrency(dailyPay.totalPay)}</span>
+                 </div>
+               )
+             }
           })}
           {sortedLogs.length > 6 && (
             <div className="text-center text-gray-400 text-[26px] font-medium mt-6">

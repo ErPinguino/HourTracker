@@ -6,11 +6,15 @@ export interface WorkLog {
   end_time: string // HH:mm
   break_minutes: number
   worked_minutes: number
+  worked_extra?: boolean
+  extra_hours?: number
   notes?: string
 }
 
 export interface Profile {
   worker_name: string
+  payment_type: 'hourly' | 'daily'
+  daily_rate?: number
   daily_goal_minutes: number
   default_break_minutes: number
   hourly_rate: number

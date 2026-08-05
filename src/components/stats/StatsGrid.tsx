@@ -7,9 +7,6 @@ interface StatsGridProps {
 }
 
 export function StatsGrid({ stats, currency }: StatsGridProps) {
-  const balancePrefix = stats.balanceMinutes > 0 ? '+' : (stats.balanceMinutes < 0 ? '-' : '')
-  const formattedBalance = formatWorkedMinutes(Math.abs(stats.balanceMinutes))
-
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('es-ES', { style: 'decimal', minimumFractionDigits: 2 }).format(val) + ' ' + currency
   }
@@ -22,6 +19,47 @@ export function StatsGrid({ stats, currency }: StatsGridProps) {
       </span>
     </div>
   )
+
+  if (stats.paymentType === 'daily') {
+    return (
+      <div className="flex flex-col space-y-8 w-full pb-10">
+        
+        {/* Featured Card */}
+        <div className="bg-gradient-to-br from-gray-900 to-black dark:from-[#1c1c1e] dark:to-[#121212] rounded-[2rem] p-8 flex flex-col items-center justify-center text-white shadow-xl transform transition-all relative overflow-hidden">
+          <div className="relative z-10 flex flex-col items-center">
+            <span className="text-gray-400 text-[13px] font-semibold tracking-wider uppercase mb-2">Ganado este mes</span>
+            <span className="text-[3.5rem] leading-none font-extrabold tracking-tight mb-2">{formatCurrency(stats.totalPay)}</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col space-y-6">
+          
+          {/* Jornales */}
+          <section>
+            <h3 className="text-premium-label mb-2 px-4">Jornadas</h3>
+            <div className="premium-card overflow-hidden">
+              <StatRow label="Jornales registrados" value={stats.totalJornales.toString()} />
+              <StatRow label="Horas extra" value={stats.totalExtraHours > 0 ? `${stats.totalExtraHours}h` : '—'} />
+            </div>
+          </section>
+
+          {/* Salario */}
+          <section>
+            <h3 className="text-premium-label mb-2 px-4">Salario</h3>
+            <div className="premium-card overflow-hidden">
+              <StatRow label="Base (jornales)" value={formatCurrency(stats.jornadaPay)} />
+              <StatRow label="Extra" value={formatCurrency(stats.overtimePay)} />
+            </div>
+          </section>
+
+        </div>
+      </div>
+    )
+  }
+
+  // Modo Horas
+  const balancePrefix = stats.balanceMinutes > 0 ? '+' : (stats.balanceMinutes < 0 ? '-' : '')
+  const formattedBalance = formatWorkedMinutes(Math.abs(stats.balanceMinutes))
 
   return (
     <div className="flex flex-col space-y-8 w-full pb-10">

@@ -9,7 +9,7 @@ export async function getProfile(): Promise<Profile | null> {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('worker_name, daily_goal_minutes, default_break_minutes, hourly_rate, overtime_rate, currency, theme')
+    .select('worker_name, payment_type, daily_rate, daily_goal_minutes, default_break_minutes, hourly_rate, overtime_rate, currency, theme')
     .eq('id', userData.user.id)
     .single()
 

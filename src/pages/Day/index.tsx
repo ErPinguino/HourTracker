@@ -48,9 +48,11 @@ export function Day() {
     mutation.mutate({
       ...initialData,
       date: date!,
-      start_time: data.start_time,
-      end_time: data.end_time,
-      break_minutes: data.break_minutes,
+      start_time: data.payment_type === 'hourly' ? data.start_time : '',
+      end_time: data.payment_type === 'hourly' ? data.end_time : '',
+      break_minutes: data.payment_type === 'hourly' ? data.break_minutes : 0,
+      worked_extra: data.payment_type === 'daily' ? (data.worked_extra ?? false) : false,
+      extra_hours: data.payment_type === 'daily' ? (data.extra_hours ?? 0) : 0,
       worked_minutes: workedMinutes,
       notes: data.notes,
     })
@@ -81,6 +83,7 @@ export function Day() {
       <div className="w-full px-4 mt-4 flex-1 flex flex-col">
         <DayForm 
           initialData={initialData || { break_minutes: profile?.default_break_minutes || 30 }} 
+          paymentType={profile?.payment_type || 'hourly'}
           onSubmit={handleSubmit}
           isPending={mutation.isPending}
         />

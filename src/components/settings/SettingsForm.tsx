@@ -11,6 +11,7 @@ import { Check } from 'lucide-react'
 
 const formSchema = z.object({
   worker_name: z.string().min(2, 'Requerido'),
+  payment_type: z.enum(['hourly', 'daily']),
   daily_goal_hours: z.number()
     .min(1, 'Mínimo 1h')
     .max(24, 'Máximo 24h'),
@@ -18,6 +19,8 @@ const formSchema = z.object({
     .min(0, 'No puede ser negativo')
     .max(180, 'Máximo 180 min (3h)'),
   hourly_rate: z.number()
+    .min(0, 'No puede ser negativo'),
+  daily_rate: z.number()
     .min(0, 'No puede ser negativo'),
   overtime_rate: z.number()
     .min(0, 'No puede ser negativo'),
@@ -50,12 +53,15 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut }: Se
     resolver: zodResolver(formSchema),
     defaultValues: {
       ...initialData,
+      payment_type: initialData.payment_type ?? 'hourly',
+      daily_rate: initialData.daily_rate ?? 0,
       daily_goal_hours: initialData.daily_goal_minutes / 60,
     },
     mode: 'onBlur',
   })
 
   const selectedTheme = useWatch({ control, name: 'theme' })
+  const paymentType = useWatch({ control, name: 'payment_type' }) || 'hourly'
 
   // Tema instantáneo
   useEffect(() => {
@@ -83,6 +89,8 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut }: Se
   useEffect(() => {
     reset({
       ...initialData,
+      payment_type: initialData.payment_type ?? 'hourly',
+      daily_rate: initialData.daily_rate ?? 0,
       daily_goal_hours: initialData.daily_goal_minutes / 60,
     })
   }, [initialData, reset])
@@ -118,33 +126,58 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut }: Se
         />
       </FormSection>
 
-      <FormSection title="Jornada">
+      <FormSection title="Tipo de Trabajador">
         <SettingsRow
-          label="Objetivo diario (h)"
-          type="number"
-          step="0.5"
-          {...register('daily_goal_hours', { valueAsNumber: true, onBlur: handleBlur })}
-          error={errors.daily_goal_hours?.message}
-          placeholder="8"
-        />
-        <SettingsRow
-          label="Descanso (min)"
-          type="number"
-          {...register('default_break_minutes', { valueAsNumber: true, onBlur: handleBlur })}
-          error={errors.default_break_minutes?.message}
-          placeholder="30"
-        />
+          label="Forma de pago"
+          isSelect
+          {...register('payment_type', { onChange: handleBlur })}
+          error={errors.payment_type?.message}
+        >
+          <option value="hourly">Pago por horas</option>
+          <option value="daily">Pago por jornal (fijo diario)</option>
+        </SettingsRow>
       </FormSection>
 
+      {paymentType === 'hourly' && (
+        <FormSection title="Jornada">
+          <SettingsRow
+            label="Objetivo diario (h)"
+            type="number"
+            step="0.5"
+            {...register('daily_goal_hours', { valueAsNumber: true, onBlur: handleBlur })}
+            error={errors.daily_goal_hours?.message}
+            placeholder="8"
+          />
+          <SettingsRow
+            label="Descanso (min)"
+            type="number"
+            {...register('default_break_minutes', { valueAsNumber: true, onBlur: handleBlur })}
+            error={errors.default_break_minutes?.message}
+            placeholder="30"
+          />
+        </FormSection>
+      )}
+
       <FormSection title="Salario">
-        <SettingsRow
-          label="Precio hora normal"
-          type="number"
-          step="0.01"
-          {...register('hourly_rate', { valueAsNumber: true, onBlur: handleBlur })}
-          error={errors.hourly_rate?.message}
-          placeholder="15"
-        />
+        {paymentType === 'daily' ? (
+          <SettingsRow
+            label="Jornal diario"
+            type="number"
+            step="0.01"
+            {...register('daily_rate', { valueAsNumber: true, onBlur: handleBlur })}
+            error={errors.daily_rate?.message}
+            placeholder="85"
+          />
+        ) : (
+          <SettingsRow
+            label="Precio hora normal"
+            type="number"
+            step="0.01"
+            {...register('hourly_rate', { valueAsNumber: true, onBlur: handleBlur })}
+            error={errors.hourly_rate?.message}
+            placeholder="15"
+          />
+        )}
         <SettingsRow
           label="Precio extra"
           type="number"
