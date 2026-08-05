@@ -8,22 +8,21 @@ import { FormSection } from '@/components/ui/FormSection'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/contexts/ThemeContext'
 import { Check } from 'lucide-react'
+import { currencySetValueAs } from '@/utils/currencyInput'
+
+const currencyField = z
+  .number()
+  .min(0, 'No puede ser negativo')
+  .refine(v => Math.round(v * 100) / 100 === v, { message: 'Máximo 2 decimales' })
 
 const formSchema = z.object({
   worker_name: z.string().min(2, 'Requerido'),
   payment_type: z.enum(['hourly', 'daily']),
-  daily_goal_hours: z.number()
-    .min(1, 'Mínimo 1h')
-    .max(24, 'Máximo 24h'),
-  default_break_minutes: z.number()
-    .min(0, 'No puede ser negativo')
-    .max(180, 'Máximo 180 min (3h)'),
-  hourly_rate: z.number()
-    .min(0, 'No puede ser negativo'),
-  daily_rate: z.number()
-    .min(0, 'No puede ser negativo'),
-  overtime_rate: z.number()
-    .min(0, 'No puede ser negativo'),
+  daily_goal_hours: z.number().min(1, 'Mínimo 1h').max(24, 'Máximo 24h'),
+  default_break_minutes: z.number().min(0, 'No puede ser negativo').max(180, 'Máximo 180 min (3h)'),
+  hourly_rate: currencyField,
+  daily_rate: currencyField,
+  overtime_rate: currencyField,
   currency: z.string().min(1, 'Requerida'),
   theme: z.enum(['light', 'dark', 'system']),
 })
@@ -162,29 +161,29 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut }: Se
         {paymentType === 'daily' ? (
           <SettingsRow
             label="Jornal diario"
-            type="number"
-            step="0.01"
-            {...register('daily_rate', { valueAsNumber: true, onBlur: handleBlur })}
+            type="text"
+            inputMode="decimal"
+            {...register('daily_rate', { setValueAs: currencySetValueAs, onBlur: handleBlur })}
             error={errors.daily_rate?.message}
-            placeholder="85"
+            placeholder="85,50"
           />
         ) : (
           <SettingsRow
             label="Precio hora normal"
-            type="number"
-            step="0.01"
-            {...register('hourly_rate', { valueAsNumber: true, onBlur: handleBlur })}
+            type="text"
+            inputMode="decimal"
+            {...register('hourly_rate', { setValueAs: currencySetValueAs, onBlur: handleBlur })}
             error={errors.hourly_rate?.message}
-            placeholder="15"
+            placeholder="12,50"
           />
         )}
         <SettingsRow
           label="Precio extra"
-          type="number"
-          step="0.01"
-          {...register('overtime_rate', { valueAsNumber: true, onBlur: handleBlur })}
+          type="text"
+          inputMode="decimal"
+          {...register('overtime_rate', { setValueAs: currencySetValueAs, onBlur: handleBlur })}
           error={errors.overtime_rate?.message}
-          placeholder="20"
+          placeholder="14,75"
         />
       </FormSection>
 

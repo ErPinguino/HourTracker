@@ -5,15 +5,21 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { upsertProfile } from '@/services/profile'
 import { useAuth } from '@/hooks/useAuth'
+import { currencySetValueAs } from '@/utils/currencyInput'
+
+const currencyField = z
+  .number()
+  .min(0, 'No puede ser negativo')
+  .refine(v => Math.round(v * 100) / 100 === v, { message: 'Máximo 2 decimales' })
 
 const schema = z.object({
   payment_type: z.enum(['hourly', 'daily']),
   worker_name: z.string().min(2, 'Introduce tu nombre'),
   daily_goal_hours: z.number().min(1, 'Mínimo 1h').max(24, 'Máximo 24h'),
   default_break_minutes: z.number().min(0, 'No puede ser negativo'),
-  hourly_rate: z.number().min(0),
-  daily_rate: z.number().min(0),
-  overtime_rate: z.number().min(0),
+  hourly_rate: currencyField,
+  daily_rate: currencyField,
+  overtime_rate: currencyField,
   currency: z.string().min(1, 'Elige moneda'),
 })
 
@@ -160,18 +166,22 @@ export function Onboarding() {
               <div className="flex justify-between items-center px-4 py-3.5 border-b border-border/40">
                 <label className="text-[17px] text-main">Jornal diario</label>
                 <input 
-                  type="number" step="0.01"
-                  {...register('daily_rate', { valueAsNumber: true })}
-                  className="text-[17px] text-sec text-right bg-transparent outline-none w-20"
+                  type="text"
+                  inputMode="decimal"
+                  {...register('daily_rate', { setValueAs: currencySetValueAs })}
+                  placeholder="85,50"
+                  className="text-[17px] text-sec text-right bg-transparent outline-none w-24"
                 />
               </div>
             ) : (
               <div className="flex justify-between items-center px-4 py-3.5 border-b border-border/40">
                 <label className="text-[17px] text-main">Hora normal</label>
                 <input 
-                  type="number" step="0.01"
-                  {...register('hourly_rate', { valueAsNumber: true })}
-                  className="text-[17px] text-sec text-right bg-transparent outline-none w-20"
+                  type="text"
+                  inputMode="decimal"
+                  {...register('hourly_rate', { setValueAs: currencySetValueAs })}
+                  placeholder="12,50"
+                  className="text-[17px] text-sec text-right bg-transparent outline-none w-24"
                 />
               </div>
             )}
@@ -179,9 +189,11 @@ export function Onboarding() {
             <div className="flex justify-between items-center px-4 py-3.5 border-b border-border/40">
               <label className="text-[17px] text-main">Hora extra</label>
               <input 
-                type="number" step="0.1"
-                {...register('overtime_rate', { valueAsNumber: true })}
-                className="text-[17px] text-sec text-right bg-transparent outline-none w-20"
+                type="text"
+                inputMode="decimal"
+                {...register('overtime_rate', { setValueAs: currencySetValueAs })}
+                placeholder="14,75"
+                className="text-[17px] text-sec text-right bg-transparent outline-none w-24"
               />
             </div>
             
