@@ -40,9 +40,10 @@ export function Onboarding() {
       worker_name: defaultName,
       daily_goal_hours: 8,
       default_break_minutes: 30,
-      hourly_rate: 0,
-      daily_rate: 0,
-      overtime_rate: 0,
+      // undefined shows placeholder instead of '0'
+      hourly_rate: undefined,
+      daily_rate: undefined,
+      overtime_rate: undefined,
       currency: '€'
     }
   })
@@ -63,8 +64,9 @@ export function Onboarding() {
         theme: 'system' // Por defecto
       })
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] })
+    onSuccess: async () => {
+      // Refetch (not just invalidate) so RequireProfile sees the new profile immediately
+      await queryClient.refetchQueries({ queryKey: ['profile'] })
       navigate('/', { replace: true })
     }
   })
@@ -77,7 +79,7 @@ export function Onboarding() {
     <div className="flex-1 flex flex-col w-full bg-background pb-12 overflow-y-auto">
       
       {/* Header (Apple Style) */}
-      <div className="px-6 pt-16 pb-8">
+      <div className="px-6 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2rem)' }}>
         <h1 className="text-[34px] font-extrabold text-main leading-tight tracking-tight mb-2">
           Bienvenido a HourTrack
         </h1>

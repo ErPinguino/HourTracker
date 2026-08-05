@@ -53,7 +53,10 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut }: Se
     defaultValues: {
       ...initialData,
       payment_type: initialData.payment_type ?? 'hourly',
-      daily_rate: initialData.daily_rate ?? 0,
+      // Show empty (placeholder) when value is 0, real value otherwise
+      hourly_rate: initialData.hourly_rate || undefined,
+      daily_rate: initialData.daily_rate || undefined,
+      overtime_rate: initialData.overtime_rate || undefined,
       daily_goal_hours: initialData.daily_goal_minutes / 60,
     },
     mode: 'onBlur',
@@ -89,7 +92,9 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut }: Se
     reset({
       ...initialData,
       payment_type: initialData.payment_type ?? 'hourly',
-      daily_rate: initialData.daily_rate ?? 0,
+      hourly_rate: initialData.hourly_rate || undefined,
+      daily_rate: initialData.daily_rate || undefined,
+      overtime_rate: initialData.overtime_rate || undefined,
       daily_goal_hours: initialData.daily_goal_minutes / 60,
     })
   }, [initialData, reset])

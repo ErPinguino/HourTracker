@@ -81,10 +81,10 @@ function HourlyForm({
     handleSubmit,
     reset,
     control,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<HourlyFormValues>({
     resolver: zodResolver(hourlySchema),
-    mode: 'onChange',
+    mode: 'onSubmit',
     defaultValues: {
       start_time: initialData.start_time?.slice(0, 5) || '',
       end_time: initialData.end_time?.slice(0, 5) || '',
@@ -192,7 +192,7 @@ function HourlyForm({
       <div className="fixed bottom-0 left-0 w-full px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-card/80 backdrop-blur-xl border-t border-border flex justify-center z-40">
         <Button
           type="submit"
-          disabled={isPending || !isValid}
+          disabled={isPending}
           fullWidth
           className="max-w-md shadow-sm h-[56px] rounded-[16px] text-[17px] font-semibold"
         >
@@ -224,13 +224,13 @@ function DailyForm({
     handleSubmit,
     reset,
     control,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<DailyFormValues>({
     resolver: zodResolver(dailySchema),
-    mode: 'onChange',
+    mode: 'onSubmit',
     defaultValues: {
       worked_extra: initialData.worked_extra ?? false,
-      extra_hours: initialData.extra_hours ?? undefined,
+      extra_hours: initialData.extra_hours || undefined,
       notes: initialData.notes || '',
     },
   })
@@ -247,7 +247,7 @@ function DailyForm({
   useEffect(() => {
     reset({
       worked_extra: initialData.worked_extra ?? false,
-      extra_hours: initialData.extra_hours ?? undefined,
+      extra_hours: initialData.extra_hours || undefined,
       notes: initialData.notes || '',
     })
   }, [initialData, reset])
@@ -311,7 +311,7 @@ function DailyForm({
       <div className="fixed bottom-0 left-0 w-full px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-card/80 backdrop-blur-xl border-t border-border flex justify-center z-40">
         <Button
           type="submit"
-          disabled={isPending || !isValid}
+          disabled={isPending}
           fullWidth
           className="max-w-md shadow-sm h-[56px] rounded-[16px] text-[17px] font-semibold"
         >
