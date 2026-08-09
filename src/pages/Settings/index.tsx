@@ -6,8 +6,6 @@ import type { Profile } from '@/types'
 import { TopBar } from '@/components/layout/TopBar'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
-import { Bell, ChevronRight } from 'lucide-react'
-import { FormSection } from '@/components/ui/FormSection'
 
 export function Settings() {
   const queryClient = useQueryClient()
@@ -72,19 +70,8 @@ export function Settings() {
             onSubmit={handleSubmit} 
             isPending={mutation.isPending} 
             onSignOut={signOut}
+            onNavigateNotifications={() => navigate('/settings/notifications')}
           />
-          <FormSection title="Notificaciones">
-            <button
-              onClick={() => navigate('/settings/notifications')}
-              className="grouped-list-item px-4 h-[56px] flex items-center justify-between w-full text-left active:bg-black/5 dark:active:bg-white/5 transition-colors"
-            >
-              <div className="flex items-center space-x-3">
-                <Bell className="text-gray-400" size={20} />
-                <span className="text-[17px] text-main">Notificaciones</span>
-              </div>
-              <ChevronRight size={20} className="text-gray-400 opacity-50" />
-            </button>
-          </FormSection>
         </div>
       )}
     </div>

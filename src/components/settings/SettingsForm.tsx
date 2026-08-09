@@ -7,7 +7,7 @@ import { SettingsRow } from './SettingsRow'
 import { FormSection } from '@/components/ui/FormSection'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/contexts/ThemeContext'
-import { Check } from 'lucide-react'
+import { Check, Bell, ChevronRight } from 'lucide-react'
 import { currencySetValueAs } from '@/utils/currencyInput'
 
 const currencyField = z
@@ -34,9 +34,10 @@ interface SettingsFormProps {
   onSubmit: (data: FormValues) => void
   isPending: boolean
   onSignOut?: () => void
+  onNavigateNotifications?: () => void
 }
 
-export function SettingsForm({ initialData, onSubmit, isPending, onSignOut }: SettingsFormProps) {
+export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNavigateNotifications }: SettingsFormProps) {
   const { user } = useAuth()
   const { setTheme } = useTheme()
   const [showSuccess, setShowSuccess] = useState(false)
@@ -215,6 +216,22 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut }: Se
           <option value="dark">Oscuro</option>
         </SettingsRow>
       </FormSection>
+
+      {onNavigateNotifications && (
+        <FormSection title="Notificaciones">
+          <button
+            type="button"
+            onClick={onNavigateNotifications}
+            className="grouped-list-item w-full text-left px-4 h-[56px] flex items-center justify-between bg-transparent active:bg-black/5 dark:active:bg-white/5 transition-colors"
+          >
+            <div className="flex items-center space-x-3">
+              <Bell className="text-gray-400" size={20} />
+              <span className="text-[17px] text-main">Notificaciones</span>
+            </div>
+            <ChevronRight size={20} className="text-gray-400 opacity-50" />
+          </button>
+        </FormSection>
+      )}
 
       {onSignOut && (
         <FormSection title="Cuenta">
