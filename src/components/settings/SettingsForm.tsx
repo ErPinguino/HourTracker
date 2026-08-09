@@ -48,6 +48,7 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
     handleSubmit,
     reset,
     control,
+    getValues,
     formState: { errors, isDirty },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -94,10 +95,13 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
     return {
       ...reg,
       onChange: async (e: React.ChangeEvent<HTMLSelectElement>) => {
-        // En RHF v7+, register().onChange devuelve una promesa.
-        // Al esperarla, garantizamos que el estado interno se ha actualizado
-        // antes de invocar handleSubmit(onSubmit).
+        if (name === 'theme') {
+          console.log("STEP 1 (Valor del select nativo)", e.target.value)
+        }
         await reg.onChange(e)
+        if (name === 'theme') {
+          console.log("STEP 2 (Valor dentro de React Hook Form)", getValues('theme'))
+        }
         handleSubmit(onSubmit)()
       }
     }

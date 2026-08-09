@@ -28,7 +28,9 @@ export function Settings() {
   })
 
   const handleSubmit = (data: FormValues) => {
-    mutation.mutate({
+    console.log("STEP 3 (Objeto recibido por onSubmit)", data)
+    
+    const mutationPayload = {
       worker_name: data.worker_name,
       payment_type: data.payment_type ?? 'hourly',
       daily_rate: data.daily_rate ?? 0,
@@ -38,7 +40,10 @@ export function Settings() {
       overtime_rate: data.overtime_rate,
       currency: data.currency,
       theme: data.theme,
-    })
+    }
+
+    console.log("STEP 4 (Objeto recibido por la mutación)", mutationPayload)
+    mutation.mutate(mutationPayload)
   }
 
   return (
