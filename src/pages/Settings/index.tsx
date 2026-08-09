@@ -1,15 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getProfile, upsertProfile } from '@/services/profile'
 import { SettingsForm } from '@/components/settings/SettingsForm'
-import { NotificationsSettings } from '@/components/settings/NotificationsSettings'
 import type { FormValues } from '@/components/settings/SettingsForm'
 import type { Profile } from '@/types'
 import { TopBar } from '@/components/layout/TopBar'
 import { useAuth } from '@/hooks/useAuth'
+import { useNavigate } from 'react-router-dom'
+import { Bell, ChevronRight } from 'lucide-react'
+import { FormSection } from '@/components/ui/FormSection'
 
 export function Settings() {
   const queryClient = useQueryClient()
   const { signOut } = useAuth()
+  const navigate = useNavigate()
 
   const { data: profile, isLoading, isError, refetch } = useQuery({
     queryKey: ['profile'],
@@ -64,13 +67,24 @@ export function Settings() {
         </div>
       ) : (
         <div className="w-full mt-4 flex flex-col space-y-6">
-          <NotificationsSettings profile={profile} />
           <SettingsForm 
             initialData={profile} 
             onSubmit={handleSubmit} 
             isPending={mutation.isPending} 
             onSignOut={signOut}
           />
+          <FormSection title="Notificaciones">
+            <button
+              onClick={() => navigate('/settings/notifications')}
+              className="grouped-list-item px-4 h-[56px] flex items-center justify-between w-full text-left active:bg-black/5 dark:active:bg-white/5 transition-colors"
+            >
+              <div className="flex items-center space-x-3">
+                <Bell className="text-gray-400" size={20} />
+                <span className="text-[17px] text-main">Notificaciones</span>
+              </div>
+              <ChevronRight size={20} className="text-gray-400 opacity-50" />
+            </button>
+          </FormSection>
         </div>
       )}
     </div>

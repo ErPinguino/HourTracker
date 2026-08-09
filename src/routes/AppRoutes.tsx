@@ -6,7 +6,7 @@ import { Login } from '@/pages/Login'
 import { Day } from '@/pages/Day'
 import { Stats } from '@/pages/Stats'
 import { Settings } from '@/pages/Settings'
-
+import { NotificationsPage } from '@/pages/Notifications'
 import { RequireProfile } from '@/routes/RequireProfile'
 import { Onboarding } from '@/pages/Onboarding'
 
@@ -26,6 +26,7 @@ export function AppRoutes() {
             <Route path="/day/:date" element={<Day />} />
             <Route path="/stats" element={<Stats />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/settings/notifications" element={<NotificationsPage />} />
           </Route>
         </Route>
       </Route>
