@@ -28,6 +28,7 @@ export function Settings() {
   })
 
   const handleSubmit = (data: FormValues) => {
+    console.log("FIRST LINE OF onSubmit (Settings/index.tsx)", data)
     console.log("STEP 3 (Objeto recibido por onSubmit)", data)
     
     const mutationPayload = {
@@ -36,8 +37,8 @@ export function Settings() {
       daily_rate: data.daily_rate ?? 0,
       daily_goal_minutes: data.daily_goal_hours * 60,
       default_break_minutes: data.default_break_minutes,
-      hourly_rate: data.hourly_rate,
-      overtime_rate: data.overtime_rate,
+      hourly_rate: data.hourly_rate ?? 0,
+      overtime_rate: data.overtime_rate ?? 0,
       currency: data.currency,
       theme: data.theme,
     }

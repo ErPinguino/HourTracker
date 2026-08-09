@@ -14,6 +14,7 @@ const currencyField = z
   .number()
   .min(0, 'No puede ser negativo')
   .refine(v => Math.round(v * 100) / 100 === v, { message: 'Máximo 2 decimales' })
+  .optional()
 
 const formSchema = z.object({
   worker_name: z.string().min(2, 'Requerido'),
@@ -102,7 +103,18 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
         if (name === 'theme') {
           console.log("STEP 2 (Valor dentro de React Hook Form)", getValues('theme'))
         }
-        handleSubmit(onSubmit)()
+        
+        console.log("BEFORE handleSubmit")
+        handleSubmit(
+          (data) => {
+            console.log("INSIDE handleSubmit SUCCESS CALLBACK")
+            onSubmit(data)
+          },
+          (errors) => {
+            console.log("INSIDE handleSubmit ERROR CALLBACK (Validation failed!)", errors)
+          }
+        )()
+        console.log("AFTER handleSubmit")
       }
     }
   }
