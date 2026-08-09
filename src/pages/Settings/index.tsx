@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getProfile, upsertProfile } from '@/services/profile'
+import { supabase } from '@/lib/supabase'
 import { SettingsForm } from '@/components/settings/SettingsForm'
 import type { FormValues } from '@/components/settings/SettingsForm'
 import type { Profile } from '@/types'
@@ -9,7 +11,7 @@ import { useNavigate } from 'react-router-dom'
 
 export function Settings() {
   const queryClient = useQueryClient()
-  const { signOut } = useAuth()
+  const { user, signOut } = useAuth()
   const navigate = useNavigate()
 
   const { data: profile, isLoading, isError, refetch } = useQuery({
@@ -19,8 +21,11 @@ export function Settings() {
 
   const mutation = useMutation({
     mutationFn: (newProfile: Profile) => upsertProfile(newProfile),
-    onSuccess: () => {
+    onSuccess: async () => {
+      console.log("SAVE OK")
       queryClient.invalidateQueries({ queryKey: ['profile'] })
+      const { data: dbData } = await supabase.from('profiles').select('theme').eq('id', user?.id).single()
+      console.log("DATABASE THEME", dbData)
     },
     onError: (error) => {
       alert(error instanceof Error ? error.message : 'Error al guardar preferencias')
@@ -28,6 +33,7 @@ export function Settings() {
   })
 
   const handleSubmit = (data: FormValues) => {
+    console.log("SAVING THEME", data.theme)
     mutation.mutate({
       worker_name: data.worker_name,
       payment_type: data.payment_type ?? 'hourly',
@@ -40,6 +46,13 @@ export function Settings() {
       theme: data.theme,
     })
   }
+
+  // Debug logs
+  useEffect(() => {
+    if (profile) {
+      console.log("PROFILE FROM QUERY", profile.theme)
+    }
+  }, [profile])
 
   return (
     <div className="flex-1 flex flex-col items-center w-full pb-8">

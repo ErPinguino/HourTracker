@@ -64,6 +64,7 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
   })
 
   const selectedTheme = useWatch({ control, name: 'theme' })
+  console.log("SELECT VALUE", selectedTheme)
   const paymentType = useWatch({ control, name: 'payment_type' }) || 'hourly'
 
   // Tema instantáneo
@@ -97,6 +98,7 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
   }
 
   useEffect(() => {
+    console.log("FORM RESET", initialData.theme)
     reset({
       ...initialData,
       payment_type: initialData.payment_type ?? 'hourly',
