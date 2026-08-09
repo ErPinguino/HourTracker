@@ -54,6 +54,7 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
   const [permission, setPermission] = useState<NotificationPermission>('default')
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isDailyConfigOpen, setIsDailyConfigOpen] = useState(false)
   const [isDaysSheetOpen, setIsDaysSheetOpen] = useState(false)
 
   useEffect(() => {
@@ -236,55 +237,23 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
 
       {isEnabled && (
         <FormSection title="Recordatorios">
-          <div className="grouped-list-item px-4 h-[56px] flex items-center justify-between">
+          <button
+            onClick={() => setIsDailyConfigOpen(true)}
+            className="grouped-list-item px-4 h-[56px] flex items-center justify-between w-full text-left active:bg-black/5 dark:active:bg-white/5 transition-colors"
+          >
             <div className="flex items-center space-x-3">
               <Clock className={profile.daily_reminder_enabled ? "text-blue-500" : "text-gray-400"} size={20} />
               <span className="text-[17px] text-main">Recordatorio diario</span>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={profile.daily_reminder_enabled || false}
-                onChange={(e) => mutation.mutate({ daily_reminder_enabled: e.target.checked })}
-                disabled={mutation.isPending}
-              />
-              <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-            </label>
-          </div>
-
-          <div 
-            aria-disabled={!profile.daily_reminder_enabled}
-            className={`transition-all duration-200 ease-out ${profile.daily_reminder_enabled ? 'opacity-100 translate-y-0' : 'opacity-50 -translate-y-1 pointer-events-none'}`}
-          >
-            <div className="grouped-list-item relative px-4 h-[56px] flex items-center justify-between overflow-hidden">
-              <span className="text-[17px] text-main">Hora</span>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="time"
-                  className="bg-transparent text-right text-[17px] text-gray-500 dark:text-gray-400 focus:outline-none h-full"
-                  value={profile.daily_reminder_time || '20:00'}
-                  onChange={(e) => mutation.mutate({ daily_reminder_time: e.target.value })}
-                  disabled={mutation.isPending}
-                />
-                <ChevronRight size={20} className="text-gray-400 opacity-50" />
-              </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-[17px] text-gray-500 dark:text-gray-400">
+                {profile.daily_reminder_enabled ? 'Sí' : 'No'}
+              </span>
+              <ChevronRight size={20} className="text-gray-400 opacity-50" />
             </div>
-            
-            <button
-              onClick={() => setIsDaysSheetOpen(true)}
-              disabled={mutation.isPending}
-              className="grouped-list-item px-4 h-[56px] flex items-center justify-between w-full text-left active:bg-black/5 dark:active:bg-white/5 transition-colors"
-            >
-              <span className="text-[17px] text-main">Días activos</span>
-              <div className="flex items-center space-x-2">
-                <span className="text-[17px] text-gray-500 dark:text-gray-400 truncate max-w-[150px]">{getDaysSummary(activeDays)}</span>
-                <ChevronRight size={20} className="text-gray-400 opacity-50" />
-              </div>
-            </button>
-          </div>
+          </button>
 
-          <div className="grouped-list-item px-4 h-[56px] flex items-center justify-between mt-6">
+          <div className="grouped-list-item px-4 h-[56px] flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <CalendarDays className={profile.missing_days_enabled ? "text-blue-500" : "text-gray-400"} size={20} />
               <span className="text-[17px] text-main">Días sin registrar</span>
@@ -332,6 +301,74 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
             </button>
           )}
         </FormSection>
+      )}
+
+      {/* Daily Config Modal */}
+      {isDailyConfigOpen && (
+        <div className="fixed inset-0 z-[90] flex flex-col justify-end">
+          <div 
+            className="absolute inset-0 bg-black/40 animate-in fade-in duration-200" 
+            onClick={() => setIsDailyConfigOpen(false)} 
+          />
+          <div className="relative bg-[#f2f2f7] dark:bg-[#1C1C1E] rounded-t-2xl p-5 pb-8 animate-in slide-in-from-bottom-full duration-300 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <button 
+                onClick={() => setIsDailyConfigOpen(false)} 
+                className="text-blue-500 font-medium active:scale-95 text-[17px]"
+              >
+                Atrás
+              </button>
+              <h3 className="text-[17px] font-semibold text-main">Recordatorio diario</h3>
+              <div className="w-14" /> {/* Spacer */}
+            </div>
+            
+            <div className="bg-white dark:bg-[#2C2C2E] rounded-xl overflow-hidden divide-y divide-border/40">
+              <div className="px-4 h-[56px] flex items-center justify-between">
+                <span className="text-[17px] text-main">Activar recordatorio</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={profile.daily_reminder_enabled || false}
+                    onChange={(e) => mutation.mutate({ daily_reminder_enabled: e.target.checked })}
+                    disabled={mutation.isPending}
+                  />
+                  <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                </label>
+              </div>
+
+              {profile.daily_reminder_enabled && (
+                <>
+                  <div className="relative px-4 h-[56px] flex items-center justify-between overflow-hidden animate-in fade-in duration-200">
+                    <span className="text-[17px] text-main">Hora</span>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="time"
+                        className="bg-transparent text-right text-[17px] text-gray-500 dark:text-gray-400 focus:outline-none h-full"
+                        value={profile.daily_reminder_time || '20:00'}
+                        onChange={(e) => mutation.mutate({ daily_reminder_time: e.target.value })}
+                        disabled={mutation.isPending}
+                      />
+                      <ChevronRight size={20} className="text-gray-400 opacity-50" />
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={() => setIsDaysSheetOpen(true)}
+                    disabled={mutation.isPending}
+                    className="px-4 h-[56px] flex items-center justify-between w-full text-left active:bg-black/5 dark:active:bg-white/5 transition-colors animate-in fade-in duration-200"
+                  >
+                    <span className="text-[17px] text-main">Días activos</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-[17px] text-gray-500 dark:text-gray-400 truncate max-w-[150px]">{getDaysSummary(activeDays)}</span>
+                      <ChevronRight size={20} className="text-gray-400 opacity-50" />
+                    </div>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Selector Modal (Bottom Sheet) */}
