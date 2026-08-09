@@ -7,13 +7,13 @@ import { supabase } from '@/lib/supabase'
 import { Bell, Smartphone, CalendarDays, Clock, FileText, CheckCircle2, XCircle, RefreshCw, ChevronRight } from 'lucide-react'
 
 const DAYS_OF_WEEK = [
-  { id: 1, label: 'L' },
-  { id: 2, label: 'M' },
-  { id: 3, label: 'X' },
-  { id: 4, label: 'J' },
-  { id: 5, label: 'V' },
-  { id: 6, label: 'S' },
-  { id: 0, label: 'D' },
+  { id: 1, label: 'L', name: 'Lunes' },
+  { id: 2, label: 'M', name: 'Martes' },
+  { id: 3, label: 'X', name: 'Miércoles' },
+  { id: 4, label: 'J', name: 'Jueves' },
+  { id: 5, label: 'V', name: 'Viernes' },
+  { id: 6, label: 'S', name: 'Sábado' },
+  { id: 0, label: 'D', name: 'Domingo' },
 ]
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -30,16 +30,13 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 function getDaysSummary(days: number[]): string {
-  if (days.length === 0) return 'No recibirás recordatorios diarios'
   if (days.length === 7) return 'Todos los días'
+  if (days.length === 0) return 'Ninguno'
+  if (days.length === 5 && [1, 2, 3, 4, 5].every(d => days.includes(d))) return 'Laborables'
+  if (days.length === 2 && days.includes(0) && days.includes(6)) return 'Fines de semana'
   
-  const isWeekdays = days.length === 5 && [1, 2, 3, 4, 5].every(d => days.includes(d))
-  if (isWeekdays) return 'De lunes a viernes'
-  
-  const isWeekend = days.length === 2 && days.includes(0) && days.includes(6)
-  if (isWeekend) return 'Solo fines de semana'
-  
-  return `${days.length} día${days.length === 1 ? '' : 's'} seleccionado${days.length === 1 ? '' : 's'}`
+  const sorted = [...days].sort((a,b) => (a === 0 ? 7 : a) - (b === 0 ? 7 : b))
+  return sorted.map(d => DAYS_OF_WEEK.find(day => day.id === d)?.label).join(' ')
 }
 
 function triggerHaptic(duration: number) {
@@ -57,6 +54,7 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
   const [permission, setPermission] = useState<NotificationPermission>('default')
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isDaysSheetOpen, setIsDaysSheetOpen] = useState(false)
 
   useEffect(() => {
     if ('Notification' in window) {
@@ -192,7 +190,6 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
   return (
     <>
       <FormSection title="Notificaciones Push">
-        {/* Status Section (Dev Only) */}
         {import.meta.env.DEV && (
           <div className="grouped-list-item flex flex-col justify-center py-2 bg-transparent px-4 mb-4">
             <div className="flex items-center space-x-3">
@@ -239,93 +236,55 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
 
       {isEnabled && (
         <FormSection title="Recordatorios">
-          {/* Recordatorio Diario */}
-          <div className="grouped-list-item flex flex-col py-2 bg-transparent px-4">
-            <div className="flex items-center justify-between h-[36px]">
-              <div className="flex items-center space-x-3">
-                <Clock className={profile.daily_reminder_enabled ? "text-blue-500" : "text-gray-400"} size={20} />
-                <span className="text-[17px] text-main">Recordatorio diario</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={profile.daily_reminder_enabled || false}
-                  onChange={(e) => {
-                    if (!e.target.checked && document.activeElement instanceof HTMLElement) {
-                      document.activeElement.blur()
-                    }
-                    mutation.mutate({ daily_reminder_enabled: e.target.checked })
-                  }}
-                  disabled={mutation.isPending}
-                />
-                <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-              </label>
+          <div className="grouped-list-item px-4 h-[56px] flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Clock className={profile.daily_reminder_enabled ? "text-blue-500" : "text-gray-400"} size={20} />
+              <span className="text-[17px] text-main">Recordatorio diario</span>
             </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={profile.daily_reminder_enabled || false}
+                onChange={(e) => mutation.mutate({ daily_reminder_enabled: e.target.checked })}
+                disabled={mutation.isPending}
+              />
+              <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+            </label>
+          </div>
 
-            <div 
-              aria-disabled={!profile.daily_reminder_enabled}
-              className={`mt-2 transition-all duration-200 ease-out ${profile.daily_reminder_enabled ? 'opacity-100 translate-y-0' : 'opacity-50 -translate-y-1 pointer-events-none'}`}
-            >
-              <div className="flex items-center justify-between mb-3 border-t border-border/40 pt-3">
-                <span className="text-[15px] text-sec">Hora de aviso</span>
+          <div 
+            aria-disabled={!profile.daily_reminder_enabled}
+            className={`transition-all duration-200 ease-out ${profile.daily_reminder_enabled ? 'opacity-100 translate-y-0' : 'opacity-50 -translate-y-1 pointer-events-none'}`}
+          >
+            <div className="grouped-list-item relative px-4 h-[56px] flex items-center justify-between overflow-hidden">
+              <span className="text-[17px] text-main">Hora</span>
+              <div className="flex items-center space-x-2">
                 <input
                   type="time"
-                  className="bg-transparent text-main text-right focus:outline-none text-[17px] min-w-[80px]"
+                  className="bg-transparent text-right text-[17px] text-gray-500 dark:text-gray-400 focus:outline-none h-full"
                   value={profile.daily_reminder_time || '20:00'}
                   onChange={(e) => mutation.mutate({ daily_reminder_time: e.target.value })}
                   disabled={mutation.isPending}
                 />
-              </div>
-              
-              <div className="flex items-center justify-between border-t border-border/40 pt-2.5">
-                <span className="text-[15px] text-sec mb-2 block w-full">Días activos</span>
-              </div>
-              <div className="flex items-center justify-between gap-0.5 mb-1.5">
-                {DAYS_OF_WEEK.map((day) => {
-                  const isActive = activeDays.includes(day.id)
-                  return (
-                    <button
-                      key={day.id}
-                      onClick={() => toggleDay(day.id)}
-                      disabled={mutation.isPending}
-                      className={`flex-1 h-[30px] rounded-[8px] flex items-center justify-center text-[13px] font-semibold transition-all duration-[150ms] ease-out active:scale-95
-                        ${isActive 
-                          ? 'bg-blue-500 text-white shadow-sm' 
-                          : 'bg-black/5 dark:bg-white/5 text-sec hover:bg-black/10 dark:hover:bg-white/10'
-                        }
-                      `}
-                    >
-                      {day.label}
-                    </button>
-                  )
-                })}
-              </div>
-              
-              <div className="flex justify-center mb-3">
-                <span className="text-[13px] text-sec">{getDaysSummary(activeDays)}</span>
-              </div>
-              
-              <div className="flex items-center gap-2 mb-1">
-                <button
-                  onClick={() => setQuickDays([1,2,3,4,5])}
-                  disabled={mutation.isPending}
-                  className="flex-1 h-8 bg-black/5 dark:bg-white/5 text-[13px] font-medium text-main rounded-lg active:scale-95 transition-all hover:bg-black/10 dark:hover:bg-white/10"
-                >
-                  Laborables
-                </button>
-                <button
-                  onClick={() => setQuickDays([0,1,2,3,4,5,6])}
-                  disabled={mutation.isPending}
-                  className="flex-1 h-8 bg-black/5 dark:bg-white/5 text-[13px] font-medium text-main rounded-lg active:scale-95 transition-all hover:bg-black/10 dark:hover:bg-white/10"
-                >
-                  Todos
-                </button>
+                <ChevronRight size={20} className="text-gray-400 opacity-50" />
               </div>
             </div>
+            
+            <button
+              onClick={() => setIsDaysSheetOpen(true)}
+              disabled={mutation.isPending}
+              className="grouped-list-item px-4 h-[56px] flex items-center justify-between w-full text-left active:bg-black/5 dark:active:bg-white/5 transition-colors"
+            >
+              <span className="text-[17px] text-main">Días activos</span>
+              <div className="flex items-center space-x-2">
+                <span className="text-[17px] text-gray-500 dark:text-gray-400 truncate max-w-[150px]">{getDaysSummary(activeDays)}</span>
+                <ChevronRight size={20} className="text-gray-400 opacity-50" />
+              </div>
+            </button>
           </div>
 
-          <div className="grouped-list-item px-4 h-[56px] flex items-center justify-between">
+          <div className="grouped-list-item px-4 h-[56px] flex items-center justify-between mt-6">
             <div className="flex items-center space-x-3">
               <CalendarDays className={profile.missing_days_enabled ? "text-blue-500" : "text-gray-400"} size={20} />
               <span className="text-[17px] text-main">Días sin registrar</span>
@@ -363,7 +322,7 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
             <button
               onClick={sendTest}
               disabled={isProcessing}
-              className="grouped-list-item px-4 h-[56px] flex items-center justify-between w-full text-left active:scale-95 transition-transform"
+              className="grouped-list-item px-4 h-[56px] flex items-center justify-between w-full text-left active:bg-black/5 dark:active:bg-white/5 transition-colors mt-6"
             >
               <div className="flex items-center space-x-3">
                 <RefreshCw size={20} className={isProcessing ? "animate-spin text-blue-500" : "text-gray-400"} />
@@ -373,6 +332,65 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
             </button>
           )}
         </FormSection>
+      )}
+
+      {/* Selector Modal (Bottom Sheet) */}
+      {isDaysSheetOpen && (
+        <div className="fixed inset-0 z-[100] flex flex-col justify-end">
+          <div 
+            className="absolute inset-0 bg-black/40 animate-in fade-in duration-200" 
+            onClick={() => setIsDaysSheetOpen(false)} 
+          />
+          <div className="relative bg-[#f2f2f7] dark:bg-[#1C1C1E] rounded-t-2xl p-5 pb-8 animate-in slide-in-from-bottom-full duration-300 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <button 
+                onClick={() => setIsDaysSheetOpen(false)} 
+                className="text-blue-500 font-medium active:scale-95 text-[17px]"
+              >
+                Cerrar
+              </button>
+              <h3 className="text-[17px] font-semibold text-main">Días activos</h3>
+              <div className="w-14" /> {/* Spacer */}
+            </div>
+            
+            <div className="bg-white dark:bg-[#2C2C2E] rounded-xl overflow-hidden divide-y divide-border/40">
+              {DAYS_OF_WEEK.map((day) => {
+                const isActive = activeDays.includes(day.id)
+                return (
+                  <button
+                    key={day.id}
+                    onClick={() => toggleDay(day.id)}
+                    className="flex items-center justify-between w-full h-[50px] px-4 active:bg-black/5 dark:active:bg-white/5 transition-colors"
+                  >
+                    <span className="text-[17px] text-main">{day.name}</span>
+                    {isActive && <CheckCircle2 size={22} className="text-blue-500" />}
+                  </button>
+                )
+              })}
+            </div>
+            
+            <div className="flex items-center gap-3 mt-4">
+              <button
+                onClick={() => {
+                  setQuickDays([1,2,3,4,5])
+                  setIsDaysSheetOpen(false)
+                }}
+                className="flex-1 h-[48px] bg-white dark:bg-[#2C2C2E] text-[15px] font-medium text-main rounded-xl active:bg-black/5 dark:active:bg-white/5 transition-colors"
+              >
+                Laborables
+              </button>
+              <button
+                onClick={() => {
+                  setQuickDays([0,1,2,3,4,5,6])
+                  setIsDaysSheetOpen(false)
+                }}
+                className="flex-1 h-[48px] bg-white dark:bg-[#2C2C2E] text-[15px] font-medium text-main rounded-xl active:bg-black/5 dark:active:bg-white/5 transition-colors"
+              >
+                Todos
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   )
