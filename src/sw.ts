@@ -5,8 +5,14 @@ import { clientsClaim } from 'workbox-core'
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
 
 // Reclama clientes inmediatamente
-self.skipWaiting()
 clientsClaim()
+
+// Manejar actualización manual de versión
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting()
+  }
+})
 
 // Precachea assets inyectados por VitePWA
 cleanupOutdatedCaches()

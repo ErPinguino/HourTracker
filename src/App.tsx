@@ -3,7 +3,8 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { AppRoutes } from './routes/AppRoutes'
-import { UpdateBanner } from './components/pwa/UpdateBanner'
+import { PWAProvider } from './contexts/PWAContext'
+import { PWAUpdater } from './components/pwa/PWAUpdater'
 import { queryClient } from '@/lib/queryClient'
 import { useNotificationsEngine } from '@/hooks/useNotificationsEngine'
 
@@ -18,11 +19,13 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <BrowserRouter>
-            <main className="min-h-screen max-w-md mx-auto w-full h-full flex flex-col relative transition-colors duration-300">
-              <EngineRunner />
-              <AppRoutes />
-              <UpdateBanner />
-            </main>
+            <PWAProvider>
+              <main className="min-h-screen max-w-md mx-auto w-full h-full flex flex-col relative transition-colors duration-300">
+                <EngineRunner />
+                <AppRoutes />
+                <PWAUpdater />
+              </main>
+            </PWAProvider>
           </BrowserRouter>
         </AuthProvider>
       </ThemeProvider>

@@ -7,8 +7,10 @@ import { SettingsRow } from './SettingsRow'
 import { FormSection } from '@/components/ui/FormSection'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/contexts/ThemeContext'
-import { Check, Bell, ChevronRight } from 'lucide-react'
+import { Check, Bell, ChevronRight, RefreshCw } from 'lucide-react'
 import { currencySetValueAs } from '@/utils/currencyInput'
+import { usePWA } from '@/contexts/PWAContext'
+import pkg from '../../../package.json'
 
 const currencyField = z
   .number()
@@ -41,6 +43,7 @@ interface SettingsFormProps {
 export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNavigateNotifications }: SettingsFormProps) {
   const { user } = useAuth()
   const { setTheme } = useTheme()
+  const { needRefresh: [needRefresh], updateServiceWorker } = usePWA()
   const [showSuccess, setShowSuccess] = useState(false)
   const [prevPending, setPrevPending] = useState(isPending)
   
@@ -262,6 +265,37 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
           </button>
         </FormSection>
       )}
+
+      <FormSection title="Aplicación">
+        <div className="grouped-list-item w-full flex flex-col bg-transparent">
+          <div className="px-4 h-[56px] flex items-center justify-between border-b border-border/50">
+            <span className="text-[17px] text-main">Versión</span>
+            <span className="text-[17px] text-sec">v{pkg.version}</span>
+          </div>
+          {needRefresh ? (
+            <button
+              type="button"
+              onClick={() => updateServiceWorker(true)}
+              className="px-4 h-[56px] flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 active:bg-blue-100 dark:active:bg-blue-900/40 transition-colors"
+            >
+              <div className="flex items-center space-x-3">
+                <RefreshCw className="text-blue-500 animate-spin-slow" size={20} />
+                <span className="text-[17px] font-medium text-blue-500">Nueva versión disponible</span>
+              </div>
+              <span className="text-[15px] font-bold text-blue-500 bg-blue-100 dark:bg-blue-500/20 px-3 py-1 rounded-full">Actualizar ahora</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => updateServiceWorker(true)}
+              className="px-4 h-[56px] flex items-center justify-between active:bg-black/5 dark:active:bg-white/5 transition-colors"
+            >
+              <span className="text-[17px] text-main">Buscar actualizaciones</span>
+              <ChevronRight size={20} className="text-gray-400 opacity-50" />
+            </button>
+          )}
+        </div>
+      </FormSection>
 
       {onSignOut && (
         <FormSection title="Cuenta">
