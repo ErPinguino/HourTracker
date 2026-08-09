@@ -4,7 +4,7 @@ import type { Profile } from '@/types'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { upsertProfile } from '@/services/profile'
 import { supabase } from '@/lib/supabase'
-import { Bell, Smartphone, CalendarDays, Clock, FileText, CheckCircle2, XCircle, RefreshCw } from 'lucide-react'
+import { Bell, Smartphone, CalendarDays, Clock, FileText, CheckCircle2, XCircle, RefreshCw, ChevronRight } from 'lucide-react'
 
 const DAYS_OF_WEEK = [
   { id: 1, label: 'L' },
@@ -192,54 +192,56 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
   return (
     <>
       <FormSection title="Notificaciones Push">
-        {/* Status Section */}
-        <div className="grouped-list-item flex flex-col justify-center py-3 bg-transparent px-4">
-          <div className="flex items-center space-x-3 mb-3">
-            <Smartphone className="text-gray-400" size={20} />
-            <div className="flex flex-col flex-1">
-              <span className="text-[17px] text-main">Estado del dispositivo</span>
-              <span className="text-[13px] text-sec flex items-center space-x-1 mt-0.5">
-                {isSupported ? (
-                  <>
-                    <CheckCircle2 size={12} className="text-green-500" />
-                    <span>Soportado</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle size={12} className="text-red-500" />
-                    <span>No soportado</span>
-                  </>
-                )}
-                <span className="mx-1">•</span>
-                <span>Permisos: {permission === 'granted' ? 'Concedido' : permission === 'denied' ? 'Denegado' : 'Pendiente'}</span>
-              </span>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between border-t border-border/40 pt-3 mt-1">
+        {/* Status Section (Dev Only) */}
+        {import.meta.env.DEV && (
+          <div className="grouped-list-item flex flex-col justify-center py-2 bg-transparent px-4 mb-4">
             <div className="flex items-center space-x-3">
-              <Bell className={isEnabled ? "text-blue-500" : "text-gray-400"} size={20} />
-              <span className="text-[17px] text-main">Recibir notificaciones</span>
+              <Smartphone className="text-gray-400" size={18} />
+              <div className="flex flex-col flex-1">
+                <span className="text-[15px] text-main">Estado del dispositivo (Dev)</span>
+                <span className="text-[12px] text-sec flex items-center space-x-1 mt-0.5">
+                  {isSupported ? (
+                    <>
+                      <CheckCircle2 size={12} className="text-green-500" />
+                      <span>Soportado</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle size={12} className="text-red-500" />
+                      <span>No soportado</span>
+                    </>
+                  )}
+                  <span className="mx-1">•</span>
+                  <span>Permisos: {permission === 'granted' ? 'Concedido' : permission === 'denied' ? 'Denegado' : 'Pendiente'}</span>
+                </span>
+              </div>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={isEnabled || false}
-                onChange={(e) => toggleMain(e.target.checked)}
-                disabled={mutation.isPending || isProcessing || !isSupported}
-              />
-              <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-            </label>
           </div>
+        )}
+
+        <div className="grouped-list-item px-4 h-[56px] flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Bell className={isEnabled ? "text-blue-500" : "text-gray-400"} size={20} />
+            <span className="text-[17px] text-main">Recibir notificaciones</span>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={isEnabled || false}
+              onChange={(e) => toggleMain(e.target.checked)}
+              disabled={mutation.isPending || isProcessing || !isSupported}
+            />
+            <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+          </label>
         </div>
       </FormSection>
 
       {isEnabled && (
         <FormSection title="Recordatorios">
           {/* Recordatorio Diario */}
-          <div className="grouped-list-item flex flex-col py-3 bg-transparent px-4">
-            <div className="flex items-center justify-between">
+          <div className="grouped-list-item flex flex-col py-2 bg-transparent px-4">
+            <div className="flex items-center justify-between h-[36px]">
               <div className="flex items-center space-x-3">
                 <Clock className={profile.daily_reminder_enabled ? "text-blue-500" : "text-gray-400"} size={20} />
                 <span className="text-[17px] text-main">Recordatorio diario</span>
@@ -263,9 +265,9 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
 
             <div 
               aria-disabled={!profile.daily_reminder_enabled}
-              className={`mt-4 transition-all duration-200 ease-out ${profile.daily_reminder_enabled ? 'opacity-100 translate-y-0' : 'opacity-50 -translate-y-1 pointer-events-none'}`}
+              className={`mt-2 transition-all duration-200 ease-out ${profile.daily_reminder_enabled ? 'opacity-100 translate-y-0' : 'opacity-50 -translate-y-1 pointer-events-none'}`}
             >
-              <div className="flex items-center justify-between mb-4 border-t border-border/40 pt-3">
+              <div className="flex items-center justify-between mb-3 border-t border-border/40 pt-3">
                 <span className="text-[15px] text-sec">Hora de aviso</span>
                 <input
                   type="time"
@@ -276,10 +278,10 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
                 />
               </div>
               
-              <div className="flex items-center justify-between border-t border-border/40 pt-3">
-                <span className="text-[15px] text-sec mb-3 block w-full">Días activos</span>
+              <div className="flex items-center justify-between border-t border-border/40 pt-2.5">
+                <span className="text-[15px] text-sec mb-2 block w-full">Días activos</span>
               </div>
-              <div className="flex items-center justify-between gap-1 mb-4">
+              <div className="flex items-center justify-between gap-0.5 mb-1.5">
                 {DAYS_OF_WEEK.map((day) => {
                   const isActive = activeDays.includes(day.id)
                   return (
@@ -287,7 +289,7 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
                       key={day.id}
                       onClick={() => toggleDay(day.id)}
                       disabled={mutation.isPending}
-                      className={`flex-1 h-10 rounded-[10px] flex items-center justify-center text-[15px] font-semibold transition-all duration-[150ms] ease-out active:scale-95
+                      className={`flex-1 h-[30px] rounded-[8px] flex items-center justify-center text-[13px] font-semibold transition-all duration-[150ms] ease-out active:scale-95
                         ${isActive 
                           ? 'bg-blue-500 text-white shadow-sm' 
                           : 'bg-black/5 dark:bg-white/5 text-sec hover:bg-black/10 dark:hover:bg-white/10'
@@ -300,22 +302,22 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
                 })}
               </div>
               
-              <div className="flex justify-center mb-5">
-                <span className="text-[14px] text-sec">{getDaysSummary(activeDays)}</span>
+              <div className="flex justify-center mb-3">
+                <span className="text-[13px] text-sec">{getDaysSummary(activeDays)}</span>
               </div>
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 mb-1">
                 <button
                   onClick={() => setQuickDays([1,2,3,4,5])}
                   disabled={mutation.isPending}
-                  className="flex-1 h-10 bg-black/5 dark:bg-white/5 text-[15px] font-medium text-main rounded-xl active:scale-95 transition-all hover:bg-black/10 dark:hover:bg-white/10"
+                  className="flex-1 h-8 bg-black/5 dark:bg-white/5 text-[13px] font-medium text-main rounded-lg active:scale-95 transition-all hover:bg-black/10 dark:hover:bg-white/10"
                 >
                   Laborables
                 </button>
                 <button
                   onClick={() => setQuickDays([0,1,2,3,4,5,6])}
                   disabled={mutation.isPending}
-                  className="flex-1 h-10 bg-black/5 dark:bg-white/5 text-[15px] font-medium text-main rounded-xl active:scale-95 transition-all hover:bg-black/10 dark:hover:bg-white/10"
+                  className="flex-1 h-8 bg-black/5 dark:bg-white/5 text-[13px] font-medium text-main rounded-lg active:scale-95 transition-all hover:bg-black/10 dark:hover:bg-white/10"
                 >
                   Todos
                 </button>
@@ -357,16 +359,19 @@ export function NotificationsSettings({ profile }: { profile: Profile }) {
             </label>
           </div>
 
-          <div className="grouped-list-item px-4 h-[56px] flex items-center justify-center">
+          {isSubscribed && (
             <button
               onClick={sendTest}
               disabled={isProcessing}
-              className="text-blue-500 font-medium active:scale-95 transition-transform flex items-center space-x-2 w-full justify-center"
+              className="grouped-list-item px-4 h-[56px] flex items-center justify-between w-full text-left active:scale-95 transition-transform"
             >
-              <RefreshCw size={18} className={isProcessing ? "animate-spin" : ""} />
-              <span>{isProcessing ? 'Enviando...' : 'Enviar prueba'}</span>
+              <div className="flex items-center space-x-3">
+                <RefreshCw size={20} className={isProcessing ? "animate-spin text-blue-500" : "text-gray-400"} />
+                <span className="text-[17px] text-main">{isProcessing ? 'Enviando...' : 'Enviar notificación de prueba'}</span>
+              </div>
+              <ChevronRight size={20} className="text-gray-400 opacity-50" />
             </button>
-          </div>
+          )}
         </FormSection>
       )}
     </>
