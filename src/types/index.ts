@@ -25,6 +25,7 @@ export interface Profile {
   notifications_enabled?: boolean
   daily_reminder_enabled?: boolean
   daily_reminder_time?: string
+  daily_reminder_days?: number[]
   missing_days_enabled?: boolean
   month_end_enabled?: boolean
 }

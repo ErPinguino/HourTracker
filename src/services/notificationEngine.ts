@@ -80,8 +80,13 @@ export async function evaluateNotifications(profile: Profile, workLogs: WorkLog[
 
   // 1. Daily Reminder
   if (profile.daily_reminder_enabled && profile.daily_reminder_time) {
-    const reminderMinutes = parseTime(profile.daily_reminder_time)
-    if (currentMinutes >= reminderMinutes) {
+    // Check if today is in the active days (0=Sun ... 6=Sat)
+    const currentDay = now.getDay()
+    const activeDays = profile.daily_reminder_days || [1,2,3,4,5]
+
+    if (activeDays.includes(currentDay)) {
+      const reminderMinutes = parseTime(profile.daily_reminder_time)
+      if (currentMinutes >= reminderMinutes) {
       if (log.lastDailyReminder !== todayStr) {
         if (!hasLogForToday(workLogs, todayStr)) {
           await sendLocalNotification('⏰ No olvides registrar la jornada', {
@@ -93,6 +98,7 @@ export async function evaluateNotifications(profile: Profile, workLogs: WorkLog[
       }
     }
   }
+}
 
   // 2. Missing Days
   if (profile.missing_days_enabled) {
