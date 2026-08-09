@@ -22,7 +22,7 @@ export function NotificationsPage() {
           <p className="text-gray-500 dark:text-gray-400">No hay datos de perfil.</p>
         </div>
       ) : (
-        <div className="w-full mt-4">
+        <div className="w-full mt-4 px-4">
           <NotificationsSettings profile={profile} />
         </div>
       )}
