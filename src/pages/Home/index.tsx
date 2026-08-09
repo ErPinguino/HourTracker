@@ -214,7 +214,7 @@ export function Home() {
             {/* Header del Ticket */}
             <div className="px-5 pt-6 pb-5 border-b border-border/60">
               <span className="text-[13px] font-medium text-sec uppercase tracking-widest block mb-1">
-                Ganado este mes uwu
+                Ganado este mes MIAU
               </span>
               <span className="text-[34px] font-extrabold text-main tracking-tight leading-none">
                 {formatCurrency(payroll.totalPay)}
