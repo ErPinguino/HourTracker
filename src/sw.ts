@@ -2,7 +2,8 @@
 declare const self: ServiceWorkerGlobalScope
 
 import { clientsClaim } from 'workbox-core'
-import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching'
+import { NavigationRoute, registerRoute } from 'workbox-routing'
 
 // Reclama clientes inmediatamente
 clientsClaim()
@@ -17,6 +18,14 @@ self.addEventListener('message', (event) => {
 // Precachea assets inyectados por VitePWA
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST || [])
+
+// Fallback SPA: intercepta las peticiones de navegación y devuelve el index.html
+// Esto evita el error 404 al recargar desde rutas como /settings
+try {
+  registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html')))
+} catch (error) {
+  console.error('Error registrando ruta de navegación SPA:', error)
+}
 
 // ---------------------------------------------------------
 // NOTIFICACIONES PUSH
