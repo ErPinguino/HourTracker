@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getProfile, upsertProfile } from '@/services/profile'
 import { SettingsForm } from '@/components/settings/SettingsForm'
+import { NotificationsSettings } from '@/components/settings/NotificationsSettings'
 import type { FormValues } from '@/components/settings/SettingsForm'
 import type { Profile } from '@/types'
 import { TopBar } from '@/components/layout/TopBar'
@@ -62,7 +63,8 @@ export function Settings() {
           <p className="text-gray-500 dark:text-gray-400">No hay datos de perfil.</p>
         </div>
       ) : (
-        <div className="w-full mt-4 flex flex-col">
+        <div className="w-full mt-4 flex flex-col space-y-6">
+          <NotificationsSettings profile={profile} />
           <SettingsForm 
             initialData={profile} 
             onSubmit={handleSubmit} 

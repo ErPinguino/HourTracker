@@ -5,6 +5,12 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import { AppRoutes } from './routes/AppRoutes'
 import { UpdateBanner } from './components/pwa/UpdateBanner'
 import { queryClient } from '@/lib/queryClient'
+import { useNotificationsEngine } from '@/hooks/useNotificationsEngine'
+
+function EngineRunner() {
+  useNotificationsEngine()
+  return null
+}
 
 function App() {
   return (
@@ -13,6 +19,7 @@ function App() {
         <AuthProvider>
           <BrowserRouter>
             <main className="min-h-screen max-w-md mx-auto w-full h-full flex flex-col relative transition-colors duration-300">
+              <EngineRunner />
               <AppRoutes />
               <UpdateBanner />
             </main>

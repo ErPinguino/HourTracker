@@ -22,4 +22,9 @@ export interface Profile {
   overtime_rate: number
   currency: string
   theme: 'light' | 'dark' | 'system'
+  notifications_enabled?: boolean
+  daily_reminder_enabled?: boolean
+  daily_reminder_time?: string
+  missing_days_enabled?: boolean
+  month_end_enabled?: boolean
 }
