@@ -89,6 +89,13 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
     }
   }
 
+  const handleSelectChange = () => {
+    // Para selects, el onChange nativo solo se dispara si el valor realmente ha cambiado.
+    // Además, el estado isDirty se actualiza de forma asíncrona, por lo que no podemos
+    // confiar en él de forma síncrona aquí. handleSubmit usará los valores más recientes.
+    handleSubmit(onSubmit)()
+  }
+
   useEffect(() => {
     reset({
       ...initialData,
@@ -135,7 +142,7 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
         <SettingsRow
           label="Forma de pago"
           isSelect
-          {...register('payment_type', { onChange: handleBlur })}
+          {...register('payment_type', { onChange: handleSelectChange })}
           error={errors.payment_type?.message}
         >
           <option value="hourly">Pago por horas</option>
@@ -197,7 +204,7 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
         <SettingsRow
           label="Moneda"
           isSelect
-          {...register('currency', { onChange: handleBlur })}
+          {...register('currency', { onChange: handleSelectChange })}
           error={errors.currency?.message}
         >
           <option value="€">€ (Euro)</option>
@@ -208,7 +215,7 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
         <SettingsRow
           label="Tema"
           isSelect
-          {...register('theme', { onChange: handleBlur })}
+          {...register('theme', { onChange: handleSelectChange })}
           error={errors.theme?.message}
         >
           <option value="system">Sistema</option>
