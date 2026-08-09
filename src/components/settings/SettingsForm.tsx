@@ -64,7 +64,6 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
   })
 
   const selectedTheme = useWatch({ control, name: 'theme' })
-  console.log("SELECT VALUE", selectedTheme)
   const paymentType = useWatch({ control, name: 'payment_type' }) || 'hourly'
 
   // Tema instantáneo
@@ -90,15 +89,21 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
     }
   }
 
-  const handleSelectChange = () => {
-    // Para selects, el onChange nativo solo se dispara si el valor realmente ha cambiado.
-    // Además, el estado isDirty se actualiza de forma asíncrona, por lo que no podemos
-    // confiar en él de forma síncrona aquí. handleSubmit usará los valores más recientes.
-    handleSubmit(onSubmit)()
+  const registerSelect = (name: keyof FormValues) => {
+    const reg = register(name)
+    return {
+      ...reg,
+      onChange: async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        // En RHF v7+, register().onChange devuelve una promesa.
+        // Al esperarla, garantizamos que el estado interno se ha actualizado
+        // antes de invocar handleSubmit(onSubmit).
+        await reg.onChange(e)
+        handleSubmit(onSubmit)()
+      }
+    }
   }
 
   useEffect(() => {
-    console.log("FORM RESET", initialData.theme)
     reset({
       ...initialData,
       payment_type: initialData.payment_type ?? 'hourly',
@@ -144,7 +149,7 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
         <SettingsRow
           label="Forma de pago"
           isSelect
-          {...register('payment_type', { onChange: handleSelectChange })}
+          {...registerSelect('payment_type')}
           error={errors.payment_type?.message}
         >
           <option value="hourly">Pago por horas</option>
@@ -206,7 +211,7 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
         <SettingsRow
           label="Moneda"
           isSelect
-          {...register('currency', { onChange: handleSelectChange })}
+          {...registerSelect('currency')}
           error={errors.currency?.message}
         >
           <option value="€">€ (Euro)</option>
@@ -217,7 +222,7 @@ export function SettingsForm({ initialData, onSubmit, isPending, onSignOut, onNa
         <SettingsRow
           label="Tema"
           isSelect
-          {...register('theme', { onChange: handleSelectChange })}
+          {...registerSelect('theme')}
           error={errors.theme?.message}
         >
           <option value="system">Sistema</option>

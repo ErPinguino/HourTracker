@@ -15,8 +15,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return (localStorage.getItem('hourtrack-theme') as Theme) || 'system'
   })
 
-  console.log("THEME PROVIDER", theme)
-
   useEffect(() => {
     const root = window.document.documentElement
     
