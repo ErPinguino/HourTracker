@@ -10,6 +10,7 @@ export interface WorkLog {
   worked_extra?: boolean
   extra_hours?: number
   notes?: string
+  work_location?: string | null
 }
 
 export interface Profile {

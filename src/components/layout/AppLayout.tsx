@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar'
 import { useAuth } from '@/hooks/useAuth'
 import { getProfile } from '@/services/profile'
 import { useTheme } from '@/contexts/ThemeContext'
+import { PageTransition } from '@/components/animate-ui/PageTransition'
 
 export function AppLayout() {
   const { user } = useAuth()
@@ -43,12 +44,7 @@ export function AppLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative" id="main-scroll-container">
-        <div 
-          key={location.pathname} 
-          className={`w-full max-w-2xl mx-auto flex-1 flex flex-col md:pb-8 animate-fade-in ${isMainScreen ? 'pb-[calc(80px+env(safe-area-inset-bottom))]' : 'pb-0'}`}
-        >
-          <Outlet />
-        </div>
+        <PageTransition pageKey={location.pathname}><div className={`w-full max-w-2xl mx-auto flex-1 flex flex-col md:pb-8 ${isMainScreen ? 'pb-[calc(80px+env(safe-area-inset-bottom))]' : 'pb-0'}`}><Outlet /></div></PageTransition>
       </div>
 
       {/* BottomNav on Mobile */}

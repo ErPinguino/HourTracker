@@ -64,3 +64,20 @@ export async function upsertWorkLog(workLog: WorkLog): Promise<WorkLog> {
 
   return data as WorkLog
 }
+
+export async function deleteWorkLog(date: string): Promise<void> {
+  const { error } = await supabase.from('work_logs').delete().eq('date', date)
+  if (error) throw error
+}
+
+export async function getRecentWorkLocations(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('work_logs')
+    .select('work_location, date')
+    .not('work_location', 'is', null)
+    .neq('work_location', '')
+    .order('date', { ascending: false })
+    .limit(100)
+  if (error) throw error
+  return [...new Set((data ?? []).map(row => row.work_location?.trim()).filter((value): value is string => !!value))].slice(0, 8)
+}

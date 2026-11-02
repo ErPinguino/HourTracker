@@ -69,7 +69,7 @@ export function Calendar({ month, workLogs, onPrevMonth, onNextMonth, onSelectDa
             const dayStr = format(day, 'yyyy-MM-dd')
             const isFuture = dayStr > todayStr
             const log = getWorkLogForDate(day)
-            const showDot = log && !isCurrentDay // HIG: No dot if selected (today)
+            const showDot = log && !isCurrentDay
             
             return (
               <div key={day.toString()} className="flex flex-col items-center justify-start h-12">
@@ -83,6 +83,7 @@ export function Calendar({ month, workLogs, onPrevMonth, onNextMonth, onSelectDa
                     ${!isCurrentMonth && !isFuture ? 'text-ter opacity-50' : ''}
                     ${isCurrentMonth && !isFuture ? 'text-main' : ''}
                     ${isCurrentDay ? 'bg-accent text-white font-semibold' : ''}
+                    ${log && !isCurrentDay ? 'ring-2 ring-[#34C759]/30' : ''}
                     ${!isCurrentDay && !isFuture ? 'hover:bg-black/5 dark:hover:bg-white/10' : ''}
                   `}
                 >

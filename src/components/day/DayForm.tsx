@@ -7,6 +7,8 @@ import { calculateWorkedMinutes } from '@/utils/calculateWorkedMinutes'
 import { formatWorkedMinutes } from '@/utils/formatWorkedMinutes'
 import { Button } from '@/components/ui/Button'
 import { Check } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { getRecentWorkLocations } from '@/services/workLogs'
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
@@ -17,6 +19,7 @@ const hourlySchema = z.object({
   end_time: z.string().regex(timeRegex, 'Formato inválido (HH:mm)'),
   break_minutes: z.number().min(0, 'El descanso no puede ser negativo'),
   notes: z.string().optional(),
+  work_location: z.string().max(120, 'Máximo 120 caracteres').optional(),
 }).refine(data => {
   if (!timeRegex.test(data.start_time) || !timeRegex.test(data.end_time)) return true
   return data.end_time > data.start_time
@@ -39,6 +42,7 @@ const dailySchema = z.object({
   worked_extra: z.boolean(),
   extra_hours: z.number().optional(),
   notes: z.string().optional(),
+  work_location: z.string().max(120, 'Máximo 120 caracteres').optional(),
 }).refine(data => {
   if (!data.worked_day || !data.worked_extra) return true
   return (data.extra_hours ?? 0) > 0
@@ -80,6 +84,7 @@ function HourlyForm({
   isSuccess?: boolean
   isError?: boolean
 }) {
+  const { data: recentLocations = [] } = useQuery({ queryKey: ['recentWorkLocations'], queryFn: getRecentWorkLocations })
   const [showSuccess, setShowSuccess] = useState(false)
   const [showError, setShowError] = useState(false)
   const [prevPending, setPrevPending] = useState(isPending)
@@ -98,6 +103,7 @@ function HourlyForm({
       end_time: initialData.end_time?.slice(0, 5) || '',
       break_minutes: initialData.break_minutes ?? 0,
       notes: initialData.notes || '',
+      work_location: initialData.work_location || '',
     },
   })
 
@@ -122,6 +128,7 @@ function HourlyForm({
       end_time: initialData.end_time?.slice(0, 5) || '',
       break_minutes: initialData.break_minutes ?? 0,
       notes: initialData.notes || '',
+      work_location: initialData.work_location || '',
     })
   }, [initialData, reset])
 
@@ -200,6 +207,10 @@ function HourlyForm({
               />
             </div>
           </div>
+          <div className="grouped-list-item px-4 py-3.5 flex items-center justify-between">
+            <label htmlFor="hourly-work-location" className="text-[17px] text-main">Lugar</label>
+            <div className="flex flex-col items-end w-1/2"><input list="work-location-options" id="hourly-work-location" type="text" placeholder="Opcional" {...register('work_location')} className="text-[17px] text-right text-sec w-full focus:outline-none bg-transparent" /><datalist id="work-location-options">{recentLocations.map(location => <option key={location} value={location} />)}</datalist></div>
+          </div>
         </div>
       </div>
 
@@ -234,6 +245,7 @@ function DailyForm({
   isSuccess?: boolean
   isError?: boolean
 }) {
+  const { data: recentLocations = [] } = useQuery({ queryKey: ['recentWorkLocations'], queryFn: getRecentWorkLocations })
   const [showSuccess, setShowSuccess] = useState(false)
   const [showError, setShowError] = useState(false)
   const [prevPending, setPrevPending] = useState(isPending)
@@ -253,6 +265,7 @@ function DailyForm({
       worked_extra: initialData.worked_extra ?? false,
       extra_hours: initialData.extra_hours || undefined,
       notes: initialData.notes || '',
+      work_location: initialData.work_location || '',
     },
   })
 
@@ -277,6 +290,7 @@ function DailyForm({
       worked_extra: initialData.worked_extra ?? false,
       extra_hours: initialData.extra_hours || undefined,
       notes: initialData.notes || '',
+      work_location: initialData.work_location || '',
     })
   }, [initialData, reset])
 
@@ -311,6 +325,10 @@ function DailyForm({
               />
               <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
             </label>
+          </div>
+          <div className="grouped-list-item px-4 py-3.5 flex items-center justify-between border-t border-border/40">
+            <label htmlFor="daily-work-location" className="text-[17px] text-main">Lugar</label>
+            <div className="flex flex-col items-end w-1/2"><input list="work-location-options-daily" id="daily-work-location" type="text" placeholder="Opcional" {...register('work_location')} className="text-[17px] text-right text-sec w-full focus:outline-none bg-transparent" /><datalist id="work-location-options-daily">{recentLocations.map(location => <option key={location} value={location} />)}</datalist></div>
           </div>
           
           {workedDay && (

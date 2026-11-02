@@ -205,6 +205,13 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
     doc.setTextColor(...colorMidGray)
     doc.text(capitalizedDateStr, colDia, y)
 
+    if (log.work_location?.trim()) {
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8)
+      doc.setTextColor(...colorLightGray)
+      doc.text(log.work_location.trim().slice(0, 55), colDia, y + 5)
+    }
+
     if (paymentType === 'daily') {
       const hasWorked = log.worked_day !== false
       
@@ -243,7 +250,7 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
       doc.text(formatCurrency(dailyPayroll.totalPay), colC, y, { align: 'right' })
     }
 
-    y += 16
+    y += log.work_location?.trim() ? 22 : 16
   })
 
   if (y > pageHeight - 80) {

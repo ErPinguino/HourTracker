@@ -22,6 +22,7 @@ import { useRef } from "react";
 import { ActionSheet } from "@/components/ui/ActionSheet";
 import { MonthlyImageTemplate } from "@/components/share/MonthlyImageTemplate";
 import { shareMonthlyImage } from "@/utils/shareMonthlyImage";
+import { DayDialog } from "@/components/day/DayDialog";
 
 export function Home() {
   const { user, signOut } = useAuth();
@@ -31,6 +32,7 @@ export function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const imageRef = useRef<HTMLDivElement>(null);
 
   const { data: profile } = useQuery({
@@ -53,7 +55,7 @@ export function Home() {
   const handleNextMonth = () => setCurrentMonth((prev) => addMonths(prev, 1));
 
   const handleSelectDate = (date: Date) => {
-    navigate(`/day/${format(date, "yyyy-MM-dd")}`);
+    setSelectedDate(format(date, "yyyy-MM-dd"));
   };
 
   const handleSharePdf = async () => {
@@ -308,6 +310,8 @@ export function Home() {
         onShareImage={handleShareImage}
         onSharePdf={handleSharePdf}
       />
+
+      <DayDialog date={selectedDate} onClose={() => setSelectedDate(null)} />
 
       {profile && (
         <MonthlyImageTemplate

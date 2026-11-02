@@ -99,7 +99,7 @@ export const MonthlyImageTemplate = React.forwardRef<HTMLDivElement, Props>(({ m
                const dailyTotal = hasWorked ? (profile.daily_rate ?? 0) + ((log.worked_extra ? log.extra_hours ?? 0 : 0) * (profile.overtime_rate ?? 0)) : 0
                return (
                  <div key={log.id} className="flex w-full justify-between items-center text-[28px]">
-                   <span className="text-gray-900 font-semibold w-1/4">{capitalizedDay}</span>
+                   <span className="text-gray-900 font-semibold w-1/4">{capitalizedDay}{log.work_location && <small className="block text-gray-400 text-[18px] font-normal truncate">{log.work_location}</small>}</span>
                    <span className="text-gray-500 font-medium w-1/4 text-center">{hasWorked ? formatCurrency(profile.daily_rate ?? 0) : '—'}</span>
                    <span className="text-gray-500 font-medium w-1/4 text-center">
                      {hasWorked && log.worked_extra && (log.extra_hours ?? 0) > 0 ? `+${log.extra_hours}h` : '—'}
@@ -111,7 +111,7 @@ export const MonthlyImageTemplate = React.forwardRef<HTMLDivElement, Props>(({ m
                const dailyPay = calculatePayroll([log], profile)
                return (
                  <div key={log.id} className="flex w-full justify-between items-center text-[28px]">
-                   <span className="text-gray-900 font-semibold w-1/3">{capitalizedDay}</span>
+                   <span className="text-gray-900 font-semibold w-1/3">{capitalizedDay}{log.work_location && <small className="block text-gray-400 text-[18px] font-normal truncate">{log.work_location}</small>}</span>
                    <span className="text-gray-500 font-medium w-1/3 text-center">{formatWorkedMinutes(log.worked_minutes)}</span>
                    <span className="text-gray-900 font-bold w-1/3 text-right">{formatCurrency(dailyPay.totalPay)}</span>
                  </div>

@@ -60,6 +60,7 @@ export function Day() {
       extra_hours: data.payment_type === 'daily' ? (data.extra_hours ?? 0) : 0,
       worked_minutes: workedMinutes,
       notes: data.notes || '',
+      work_location: data.work_location?.trim() || null,
     })
   }
 
