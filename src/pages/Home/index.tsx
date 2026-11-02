@@ -135,7 +135,9 @@ export function Home() {
 
         <div className="relative">
           <button
-            aria-label="Menú de cuenta" aria-expanded={isMenuOpen} onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Menú de cuenta"
+            aria-expanded={isMenuOpen}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="w-11 h-11 rounded-full bg-border flex items-center justify-center overflow-hidden focus:outline-none transition-transform active:scale-95 md:hidden"
           >
             {userAvatar ? (
@@ -217,7 +219,7 @@ export function Home() {
             {/* Header del Ticket */}
             <div className="px-5 pt-6 pb-5 border-b border-border/60">
               <span className="text-[13px] font-medium text-sec uppercase tracking-widest block mb-1">
-                Ganado este mes MIAU
+                Ganado este mes
               </span>
               <span className="text-[clamp(1.75rem,8vw,2.125rem)] break-words font-extrabold text-main tracking-tight leading-none">
                 {formatCurrency(payroll.totalPay)}

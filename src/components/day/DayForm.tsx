@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { z } from 'zod'
 import { hourlySchema, dailySchema } from '@/utils/dayValidation'
@@ -8,6 +8,7 @@ import { calculateWorkedMinutes } from '@/utils/calculateWorkedMinutes'
 import { formatWorkedMinutes } from '@/utils/formatWorkedMinutes'
 import { Button } from '@/components/ui/Button'
 import { Check } from 'lucide-react'
+import { WorkLocationInput } from './WorkLocationInput'
 import { useQuery } from '@tanstack/react-query'
 import { getRecentWorkLocations } from '@/services/workLogs'
 
@@ -57,7 +58,6 @@ function HourlyForm({
     register,
     handleSubmit,
     reset,
-    setValue,
     control,
     formState: { errors },
   } = useForm<HourlyFormValues>({
@@ -114,7 +114,6 @@ function HourlyForm({
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="day-form flex flex-col min-w-0 w-full relative">
       <div className="space-y-4 flex-1 pb-4">
-        {recentLocations.length > 0 && <div><p className="mb-2 text-xs text-sec">Lugares recientes</p><div className="flex flex-wrap gap-2">{recentLocations.slice(0, 4).map(location => <button type="button" key={location} disabled={isPending} onClick={() => setValue('work_location', location, { shouldDirty: true, shouldValidate: true })} className="max-w-full min-h-11 rounded-full border border-border px-3 text-sm text-accent break-words">{location}</button>)}</div></div>}
         {errors.work_location && <p role="alert" className="text-sm text-red-500">{errors.work_location.message}</p>}
 
         <div className="flex flex-col items-center justify-center pt-2 pb-1">
@@ -176,7 +175,7 @@ function HourlyForm({
           </div>
           <div className="grouped-list-item px-4 py-3.5 flex items-center justify-between">
             <label htmlFor="hourly-work-location" className="text-[17px] text-main">Lugar</label>
-            <div className="flex flex-col items-end w-1/2"><input list="work-location-options" id="hourly-work-location" type="text" placeholder="Opcional" {...register('work_location')} className="text-[17px] text-right text-sec w-full focus:outline-none bg-transparent" /><datalist id="work-location-options">{recentLocations.map(location => <option key={location} value={location} />)}</datalist></div>
+            <div className="min-w-0 w-2/3"><Controller name="work_location" control={control} render={({ field, fieldState }) => <WorkLocationInput id="hourly-work-location" value={field.value || ''} locations={recentLocations} onChange={field.onChange} onBlur={field.onBlur} inputRef={field.ref} disabled={isPending} invalid={!!fieldState.error} />} /></div>
           </div>
         </div>
       </div>
@@ -280,7 +279,6 @@ function DailyForm({
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="day-form flex flex-col min-w-0 w-full relative">
       <div className="space-y-4 flex-1 pb-4">
-        {recentLocations.length > 0 && <div><p className="mb-2 text-xs text-sec">Lugares recientes</p><div className="flex flex-wrap gap-2">{recentLocations.slice(0, 4).map(location => <button type="button" key={location} disabled={isPending} onClick={() => setValue('work_location', location, { shouldDirty: true, shouldValidate: true })} className="max-w-full min-h-11 rounded-full border border-border px-3 text-sm text-accent break-words">{location}</button>)}</div></div>}
         {errors.work_location && <p role="alert" className="text-sm text-red-500">{errors.work_location.message}</p>}
 
         <div className="premium-card overflow-hidden">
@@ -297,7 +295,7 @@ function DailyForm({
           </div>
           <div className="grouped-list-item px-4 py-3.5 flex items-center justify-between border-t border-border/40">
             <label htmlFor="daily-work-location" className="text-[17px] text-main">Lugar</label>
-            <div className="flex flex-col items-end w-1/2"><input list="work-location-options-daily" id="daily-work-location" type="text" placeholder="Opcional" {...register('work_location')} className="text-[17px] text-right text-sec w-full focus:outline-none bg-transparent" /><datalist id="work-location-options-daily">{recentLocations.map(location => <option key={location} value={location} />)}</datalist></div>
+            <div className="min-w-0 w-2/3"><Controller name="work_location" control={control} render={({ field, fieldState }) => <WorkLocationInput id="daily-work-location" value={field.value || ''} locations={recentLocations} onChange={field.onChange} onBlur={field.onBlur} inputRef={field.ref} disabled={isPending} invalid={!!fieldState.error} />} /></div>
           </div>
           
           {workedDay && (
