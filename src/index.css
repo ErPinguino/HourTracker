@@ -47,7 +47,12 @@
 .day-form input[type="time"] { max-width: 100%; }
 .day-form input[type="time"]::-webkit-date-and-time-value { text-align: right; }
 :where(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.day-dialog { scrollbar-gutter: stable; scroll-padding-block: 5rem; }
+.day-dialog-viewport {
+  box-sizing: border-box;
+  height: 100dvh;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+}
+.day-dialog { max-height: 100%; scrollbar-gutter: stable; scroll-padding-block: 5rem; }
 @media (max-width: 375px) {
   .day-form .grouped-list-item { padding-inline: .75rem; }
 }

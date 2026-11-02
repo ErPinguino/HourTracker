@@ -34,20 +34,22 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
   const payroll = calculatePayroll(sortedLogs, profile)
 
   // Columnas de la tabla varían según el tipo de trabajador
+  const colLugar = marginLeft + 125
+  const locationWidth = rightMargin - colLugar
   const colDia = marginLeft
   let colA: number, colB: number, colC: number, headerA: string, headerB: string, headerC: string
 
   if (paymentType === 'daily') {
-    colA = marginLeft + 35
-    colB = marginLeft + 90
-    colC = rightMargin
+    colA = marginLeft + 21
+    colB = marginLeft + 65
+    colC = marginLeft + 119
     headerA = 'Jornal'
     headerB = 'Extra'
     headerC = 'Total'
   } else {
-    colA = marginLeft + 35
-    colB = marginLeft + 95
-    colC = rightMargin
+    colA = marginLeft + 21
+    colB = marginLeft + 65
+    colC = marginLeft + 119
     headerA = 'Jornada'
     headerB = 'Total'
     headerC = 'Ganado'
@@ -157,6 +159,7 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
       d.text(headerA, colA, y)
       d.text(headerB, colB, y)
       d.text(headerC, colC, y, { align: 'right' })
+      d.text('Lugar', colLugar, y)
       
       y += 6
       d.setDrawColor(...colorDivider)
@@ -190,7 +193,11 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
   doc.setFontSize(10)
 
   sortedLogs.forEach(log => {
-    if (y > pageHeight - 40) {
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    const locationLines: string[] = log.work_location ? doc.splitTextToSize(log.work_location, locationWidth) : []
+    const rowHeight = Math.max(16, locationLines.length * 4.1 + 4)
+    if (y + rowHeight > pageHeight - 24) {
       drawFooter(doc)
       doc.addPage()
       y = drawPageHeader(doc, false)
@@ -205,12 +212,7 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
     doc.setTextColor(...colorMidGray)
     doc.text(capitalizedDateStr, colDia, y)
 
-    if (log.work_location?.trim()) {
-      doc.setFont('helvetica', 'normal')
-      doc.setFontSize(8)
-      doc.setTextColor(...colorLightGray)
-      doc.text(log.work_location.trim().slice(0, 55), colDia, y + 5)
-    }
+
 
     if (paymentType === 'daily') {
       const hasWorked = log.worked_day !== false
@@ -250,7 +252,10 @@ export function generateMonthlyPdf(month: Date, workLogs: WorkLog[], profile: Pr
       doc.text(formatCurrency(dailyPayroll.totalPay), colC, y, { align: 'right' })
     }
 
-    y += log.work_location?.trim() ? 22 : 16
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...colorMidGray)
+    if (locationLines.length) doc.text(locationLines, colLugar, y)
+    y += rowHeight
   })
 
   if (y > pageHeight - 80) {

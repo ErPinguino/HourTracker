@@ -30,10 +30,10 @@ export const MonthlyImageTemplate = React.forwardRef<HTMLDivElement, Props>(({ m
   return (
     <div
       ref={ref}
-      style={{ width: 1080, height: 1350 }}
+      style={{ width: 1080, minHeight: 1350, paddingBlock: 100 }}
       className="fixed top-0 left-0 -z-50 opacity-0 bg-[#F3F4F8] flex items-center justify-center pointer-events-none"
     >
-      <div className="w-[920px] h-[1150px] bg-white rounded-[48px] shadow-[0_32px_64px_rgba(0,0,0,0.06)] flex flex-col items-center py-16 px-24">
+      <div className="w-[920px] min-h-[1150px] bg-white rounded-[48px] shadow-[0_32px_64px_rgba(0,0,0,0.06)] flex flex-col items-center py-16 px-24">
         
         {/* Cabecera */}
         <h1 className="text-[#0A84FF] text-4xl font-bold mb-3 tracking-tight">HourTrack</h1>
@@ -87,8 +87,11 @@ export const MonthlyImageTemplate = React.forwardRef<HTMLDivElement, Props>(({ m
         
         <div className="w-full h-px bg-gray-200 mb-12" />
         
-        {/* Listado de días */}
-        <div className="flex-1 w-full flex flex-col gap-10 overflow-hidden">
+        {/* Listado de días: same column tracks in header and rows. */}
+        <div className="grid w-full grid-cols-[.7fr_1.35fr_1fr_1fr_1.3fr] gap-x-3 text-[28px] font-medium text-gray-500">
+          <span>Día</span><span>{paymentType === 'daily' ? 'Jornal' : 'Jornada'}</span><span>{paymentType === 'daily' ? 'Extra' : 'Total'}</span><span className="text-right">{paymentType === 'daily' ? 'Total' : 'Ganado'}</span><span>Lugar</span>
+        </div>
+        <div className="flex-1 w-full flex flex-col gap-10">
           {sortedLogs.slice(0, 6).map(log => {
              const dateObj = new Date(`${log.date}T12:00:00`)
              const dayStr = format(dateObj, 'dd MMM', { locale: es })
@@ -98,22 +101,25 @@ export const MonthlyImageTemplate = React.forwardRef<HTMLDivElement, Props>(({ m
                const hasWorked = log.worked_day !== false
                const dailyTotal = hasWorked ? (profile.daily_rate ?? 0) + ((log.worked_extra ? log.extra_hours ?? 0 : 0) * (profile.overtime_rate ?? 0)) : 0
                return (
-                 <div key={log.id} className="flex w-full justify-between items-center text-[28px]">
-                   <span className="text-gray-900 font-semibold w-1/4">{capitalizedDay}{log.work_location && <small className="block text-gray-400 text-[18px] font-normal truncate">{log.work_location}</small>}</span>
-                   <span className="text-gray-500 font-medium w-1/4 text-center">{hasWorked ? formatCurrency(profile.daily_rate ?? 0) : '—'}</span>
-                   <span className="text-gray-500 font-medium w-1/4 text-center">
+                 <div key={log.id} className="grid w-full grid-cols-[.7fr_1.35fr_1fr_1fr_1.3fr] gap-x-3 items-center text-[28px] [&>span]:min-w-0 [&>span]:break-words">
+                   <span className="text-gray-900 font-semibold">{capitalizedDay}</span>
+                   <span className="text-gray-500 font-medium text-center">{hasWorked ? formatCurrency(profile.daily_rate ?? 0) : '—'}</span>
+                   <span className="text-gray-500 font-medium text-center">
                      {hasWorked && log.worked_extra && (log.extra_hours ?? 0) > 0 ? `+${log.extra_hours}h` : '—'}
                    </span>
-                   <span className="text-gray-900 font-bold w-1/4 text-right">{formatCurrency(dailyTotal)}</span>
+                   <span className="text-gray-900 font-bold text-right">{formatCurrency(dailyTotal)}</span>
+                   <span className="text-gray-500 font-medium [overflow-wrap:anywhere]">{log.work_location || ''}</span>
                  </div>
                )
              } else {
                const dailyPay = calculatePayroll([log], profile)
                return (
-                 <div key={log.id} className="flex w-full justify-between items-center text-[28px]">
-                   <span className="text-gray-900 font-semibold w-1/3">{capitalizedDay}{log.work_location && <small className="block text-gray-400 text-[18px] font-normal truncate">{log.work_location}</small>}</span>
-                   <span className="text-gray-500 font-medium w-1/3 text-center">{formatWorkedMinutes(log.worked_minutes)}</span>
-                   <span className="text-gray-900 font-bold w-1/3 text-right">{formatCurrency(dailyPay.totalPay)}</span>
+                 <div key={log.id} className="grid w-full grid-cols-[.7fr_1.35fr_1fr_1fr_1.3fr] gap-x-3 items-center text-[28px] [&>span]:min-w-0 [&>span]:break-words">
+                   <span className="text-gray-900 font-semibold">{capitalizedDay}</span>
+                   <span className="text-gray-500 font-medium">{log.start_time?.slice(0, 5)} - {log.end_time?.slice(0, 5)}</span>
+                   <span className="text-gray-500 font-medium">{formatWorkedMinutes(log.worked_minutes)}</span>
+                   <span className="text-gray-900 font-bold text-right">{formatCurrency(dailyPay.totalPay)}</span>
+                   <span className="text-gray-500 font-medium [overflow-wrap:anywhere]">{log.work_location || ''}</span>
                  </div>
                )
              }
