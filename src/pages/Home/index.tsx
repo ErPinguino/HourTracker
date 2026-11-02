@@ -124,19 +124,19 @@ export function Home() {
     <div className="flex-1 flex flex-col items-center w-full pb-16">
       {/* Header Nativo */}
       <div className="w-full flex items-end justify-between px-6 pt-12 pb-6 bg-transparent shrink-0">
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-col">
           <span className="text-[15px] font-medium text-sec mb-0.5">
             {getGreeting()}
           </span>
-          <h1 className="text-[34px] font-extrabold text-main leading-none tracking-tight">
+          <h1 className="text-[clamp(1.75rem,8vw,2.125rem)] break-words font-extrabold text-main leading-none tracking-tight">
             {userName}
           </h1>
         </div>
 
         <div className="relative">
           <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="w-8 h-8 rounded-full bg-border flex items-center justify-center overflow-hidden focus:outline-none transition-transform active:scale-95 md:hidden"
+            aria-label="Menú de cuenta" aria-expanded={isMenuOpen} onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="w-11 h-11 rounded-full bg-border flex items-center justify-center overflow-hidden focus:outline-none transition-transform active:scale-95 md:hidden"
           >
             {userAvatar ? (
               <img
@@ -206,6 +206,7 @@ export function Home() {
           onPrevMonth={handlePrevMonth}
           onNextMonth={handleNextMonth}
           onSelectDate={handleSelectDate}
+          selectedDate={selectedDate}
         />
       </div>
 
@@ -218,7 +219,7 @@ export function Home() {
               <span className="text-[13px] font-medium text-sec uppercase tracking-widest block mb-1">
                 Ganado este mes MIAU
               </span>
-              <span className="text-[34px] font-extrabold text-main tracking-tight leading-none">
+              <span className="text-[clamp(1.75rem,8vw,2.125rem)] break-words font-extrabold text-main tracking-tight leading-none">
                 {formatCurrency(payroll.totalPay)}
               </span>
             </div>

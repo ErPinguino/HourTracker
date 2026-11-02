@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import type { z } from 'zod'
+import { hourlySchema, dailySchema } from '@/utils/dayValidation'
 import type { WorkLog } from '@/types'
 import { calculateWorkedMinutes } from '@/utils/calculateWorkedMinutes'
 import { formatWorkedMinutes } from '@/utils/formatWorkedMinutes'
@@ -12,44 +13,7 @@ import { getRecentWorkLocations } from '@/services/workLogs'
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
-const timeRegex = /^([01]\\d|2[0-3]):([0-5]\\d)$/
-
-const hourlySchema = z.object({
-  start_time: z.string().regex(timeRegex, 'Formato inválido (HH:mm)'),
-  end_time: z.string().regex(timeRegex, 'Formato inválido (HH:mm)'),
-  break_minutes: z.number().min(0, 'El descanso no puede ser negativo'),
-  notes: z.string().optional(),
-  work_location: z.string().max(120, 'Máximo 120 caracteres').optional(),
-}).refine(data => {
-  if (!timeRegex.test(data.start_time) || !timeRegex.test(data.end_time)) return true
-  return data.end_time > data.start_time
-}, {
-  message: 'La salida debe ser posterior a la entrada',
-  path: ['end_time'],
-}).refine(data => {
-  if (!timeRegex.test(data.start_time) || !timeRegex.test(data.end_time) || data.end_time <= data.start_time) return true
-  const [sh, sm] = data.start_time.split(':').map(Number)
-  const [eh, em] = data.end_time.split(':').map(Number)
-  const diffMins = (eh * 60 + em) - (sh * 60 + sm)
-  return data.break_minutes < diffMins
-}, {
-  message: 'El descanso no puede superar la jornada',
-  path: ['break_minutes'],
-})
-
-const dailySchema = z.object({
-  worked_day: z.boolean(),
-  worked_extra: z.boolean(),
-  extra_hours: z.number().optional(),
-  notes: z.string().optional(),
-  work_location: z.string().max(120, 'Máximo 120 caracteres').optional(),
-}).refine(data => {
-  if (!data.worked_day || !data.worked_extra) return true
-  return (data.extra_hours ?? 0) > 0
-}, {
-  message: 'Indica las horas extra (mayor que 0)',
-  path: ['extra_hours'],
-})
+import { normalizeTime, timeRegex } from '@/utils/time'
 
 export type HourlyFormValues = z.infer<typeof hourlySchema>
 export type DailyFormValues = z.infer<typeof dailySchema>
@@ -93,11 +57,12 @@ function HourlyForm({
     register,
     handleSubmit,
     reset,
+    setValue,
     control,
     formState: { errors },
   } = useForm<HourlyFormValues>({
     resolver: zodResolver(hourlySchema),
-    mode: 'onSubmit',
+    mode: 'onChange',
     defaultValues: {
       start_time: initialData.start_time?.slice(0, 5) || '',
       end_time: initialData.end_time?.slice(0, 5) || '',
@@ -147,14 +112,16 @@ function HourlyForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col h-full flex-1 w-full relative">
-      <div className="space-y-4 flex-1 pb-20">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="day-form flex flex-col min-w-0 w-full relative">
+      <div className="space-y-4 flex-1 pb-4">
+        {recentLocations.length > 0 && <div><p className="mb-2 text-xs text-sec">Lugares recientes</p><div className="flex flex-wrap gap-2">{recentLocations.slice(0, 4).map(location => <button type="button" key={location} disabled={isPending} onClick={() => setValue('work_location', location, { shouldDirty: true, shouldValidate: true })} className="max-w-full min-h-11 rounded-full border border-border px-3 text-sm text-accent break-words">{location}</button>)}</div></div>}
+        {errors.work_location && <p role="alert" className="text-sm text-red-500">{errors.work_location.message}</p>}
 
         <div className="flex flex-col items-center justify-center pt-2 pb-1">
           <span className="text-[13px] font-semibold tracking-wider uppercase text-ter mb-1">
             Horas trabajadas
           </span>
-          <span className="text-[56px] leading-none font-bold text-main tracking-tight">
+          <span className="text-[40px] sm:text-[48px] leading-none font-bold text-main tracking-tight">
             {liveWorkedMinutes > 0 ? formatWorkedMinutes(liveWorkedMinutes) : '0 h'}
           </span>
         </div>
@@ -165,10 +132,10 @@ function HourlyForm({
             <div className="flex flex-col items-end">
               <input
                 type="time"
-                {...register('start_time')}
+                aria-label="Entrada" aria-invalid={!!errors.start_time} step={60} {...register('start_time', { setValueAs: normalizeTime })}
                 className="text-[17px] text-right text-accent w-32 focus:outline-none bg-transparent"
               />
-              {errors.start_time && <span className="text-xs text-red-500 mt-1">{errors.start_time.message}</span>}
+              {errors.start_time && <span role="alert" className="text-xs text-red-500 mt-1 max-w-[12rem] text-right">{errors.start_time.message}</span>}
             </div>
           </div>
 
@@ -177,10 +144,10 @@ function HourlyForm({
             <div className="flex flex-col items-end">
               <input
                 type="time"
-                {...register('end_time')}
+                aria-label="Salida" aria-invalid={!!errors.end_time} step={60} {...register('end_time', { setValueAs: normalizeTime })}
                 className="text-[17px] text-right text-accent w-32 focus:outline-none bg-transparent"
               />
-              {errors.end_time && <span className="text-xs text-red-500 mt-1">{errors.end_time.message}</span>}
+              {errors.end_time && <span role="alert" className="text-xs text-red-500 mt-1 max-w-[12rem] text-right">{errors.end_time.message}</span>}
             </div>
           </div>
 
@@ -189,10 +156,10 @@ function HourlyForm({
             <div className="flex flex-col items-end">
               <input
                 type="number"
-                {...register('break_minutes', { valueAsNumber: true })}
+                aria-label="Descanso en minutos" min={0} step={1} aria-invalid={!!errors.break_minutes} {...register('break_minutes', { valueAsNumber: true })}
                 className="text-[17px] text-right text-sec w-24 focus:outline-none bg-transparent"
               />
-              {errors.break_minutes && <span className="text-xs text-red-500 mt-1">{errors.break_minutes.message}</span>}
+              {errors.break_minutes && <span role="alert" className="text-xs text-red-500 mt-1 max-w-[12rem] text-right">{errors.break_minutes.message}</span>}
             </div>
           </div>
 
@@ -202,7 +169,7 @@ function HourlyForm({
               <input
                 type="text"
                 placeholder="Opcional..."
-                {...register('notes')}
+                aria-label="Notas" {...register('notes')}
                 className="text-[17px] text-right text-sec w-full focus:outline-none bg-transparent"
               />
             </div>
@@ -214,7 +181,7 @@ function HourlyForm({
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 w-full px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-card/80 backdrop-blur-xl border-t border-border flex justify-center z-40">
+      <div className="sticky bottom-0 w-full pt-3 pb-[calc(.75rem+env(safe-area-inset-bottom))] bg-card border-t border-border flex justify-center z-10">
         <Button
           type="submit"
           disabled={isPending}
@@ -225,7 +192,7 @@ function HourlyForm({
         </Button>
       </div>
 
-      <div className={`fixed top-6 right-4 z-50 flex items-center space-x-2 bg-main/90 backdrop-blur text-card px-4 py-2.5 rounded-full text-[14px] font-medium shadow-lg transition-all duration-300 transform ${isPending || showSuccess || showError ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'} ${showError ? 'bg-red-500 text-white' : ''}`}>
+      <div role="status" className={`absolute bottom-full right-0 z-20 flex items-center space-x-2 bg-main/90 backdrop-blur text-card px-4 py-2.5 rounded-full text-[14px] font-medium shadow-lg transition-all duration-300 transform ${isPending || showSuccess || showError ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'} ${showError ? 'bg-red-500 text-white' : ''}`}>
         {isPending ? <span>Guardando...</span> : showSuccess ? <><Check size={16} className="text-[#34C759]" /><span>Guardado</span></> : showError ? <span>Error al guardar</span> : null}
       </div>
     </form>
@@ -259,7 +226,7 @@ function DailyForm({
     formState: { errors },
   } = useForm<DailyFormValues>({
     resolver: zodResolver(dailySchema),
-    mode: 'onSubmit',
+    mode: 'onChange',
     defaultValues: {
       worked_day: initialData.worked_day ?? true,
       worked_extra: initialData.worked_extra ?? false,
@@ -311,8 +278,10 @@ function DailyForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col h-full flex-1 w-full relative">
-      <div className="space-y-4 flex-1 pb-20">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="day-form flex flex-col min-w-0 w-full relative">
+      <div className="space-y-4 flex-1 pb-4">
+        {recentLocations.length > 0 && <div><p className="mb-2 text-xs text-sec">Lugares recientes</p><div className="flex flex-wrap gap-2">{recentLocations.slice(0, 4).map(location => <button type="button" key={location} disabled={isPending} onClick={() => setValue('work_location', location, { shouldDirty: true, shouldValidate: true })} className="max-w-full min-h-11 rounded-full border border-border px-3 text-sm text-accent break-words">{location}</button>)}</div></div>}
+        {errors.work_location && <p role="alert" className="text-sm text-red-500">{errors.work_location.message}</p>}
 
         <div className="premium-card overflow-hidden">
           <div className="grouped-list-item px-4 py-3.5 flex items-center justify-between">
@@ -321,7 +290,7 @@ function DailyForm({
               <input
                 type="checkbox"
                 className="sr-only peer"
-                {...register('worked_day')}
+                aria-label="Ha trabajado hoy" {...register('worked_day')}
               />
               <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
             </label>
@@ -338,7 +307,7 @@ function DailyForm({
                 <input
                   type="checkbox"
                   className="sr-only peer"
-                  {...register('worked_extra')}
+                  aria-label="Horas extra hoy" {...register('worked_extra')}
                 />
                 <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
               </label>
@@ -353,11 +322,11 @@ function DailyForm({
                   type="number"
                   step="0.5"
                   min="0.5"
-                  {...register('extra_hours', { valueAsNumber: true })}
+                  aria-label="Cantidad de horas extra" {...register('extra_hours', { setValueAs: value => value === '' ? undefined : Number(value) })}
                   className="text-[17px] text-right text-accent w-24 focus:outline-none bg-transparent"
                   placeholder="2.5"
                 />
-                {errors.extra_hours && <span className="text-xs text-red-500 mt-1">{errors.extra_hours.message}</span>}
+                {errors.extra_hours && <span role="alert" className="text-xs text-red-500 mt-1 max-w-[12rem] text-right">{errors.extra_hours.message}</span>}
               </div>
             </div>
           )}
@@ -370,7 +339,7 @@ function DailyForm({
               <input
                 type="text"
                 placeholder="Opcional..."
-                {...register('notes')}
+                aria-label="Notas" {...register('notes')}
                 className="text-[17px] text-right text-sec w-full focus:outline-none bg-transparent"
               />
             </div>
@@ -378,7 +347,7 @@ function DailyForm({
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 w-full px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-card/80 backdrop-blur-xl border-t border-border flex justify-center z-40">
+      <div className="sticky bottom-0 w-full pt-3 pb-[calc(.75rem+env(safe-area-inset-bottom))] bg-card border-t border-border flex justify-center z-10">
         <Button
           type="submit"
           disabled={isPending}
@@ -389,7 +358,7 @@ function DailyForm({
         </Button>
       </div>
 
-      <div className={`fixed top-6 right-4 z-50 flex items-center space-x-2 bg-main/90 backdrop-blur text-card px-4 py-2.5 rounded-full text-[14px] font-medium shadow-lg transition-all duration-300 transform ${isPending || showSuccess || showError ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'} ${showError ? 'bg-red-500 text-white' : ''}`}>
+      <div role="status" className={`absolute bottom-full right-0 z-20 flex items-center space-x-2 bg-main/90 backdrop-blur text-card px-4 py-2.5 rounded-full text-[14px] font-medium shadow-lg transition-all duration-300 transform ${isPending || showSuccess || showError ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'} ${showError ? 'bg-red-500 text-white' : ''}`}>
         {isPending ? <span>Guardando...</span> : showSuccess ? <><Check size={16} className="text-[#34C759]" /><span>Guardado</span></> : showError ? <span>Error al guardar</span> : null}
       </div>
     </form>

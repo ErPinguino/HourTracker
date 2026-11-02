@@ -15,17 +15,17 @@ export function MonthSelector({ currentMonth, onPrevMonth, onNextMonth }: MonthS
   return (
     <div className="flex justify-between items-center w-full px-2 mb-6">
       <button
-        onClick={onPrevMonth}
-        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        aria-label="Mes anterior" onClick={onPrevMonth}
+        className="min-h-11 min-w-11 p-2 hover:bg-gray-100 rounded-full transition-colors"
       >
         <ChevronLeft size={24} className="text-gray-600" />
       </button>
-      <h2 className="text-xl font-semibold text-gray-800">
+      <h2 className="text-xl font-semibold text-main">
         {capitalizedMonth}
       </h2>
       <button
-        onClick={onNextMonth}
-        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        aria-label="Mes siguiente" onClick={onNextMonth}
+        className="min-h-11 min-w-11 p-2 hover:bg-gray-100 rounded-full transition-colors"
       >
         <ChevronRight size={24} className="text-gray-600" />
       </button>

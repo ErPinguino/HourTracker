@@ -9,9 +9,10 @@ interface CalendarProps {
   onPrevMonth: () => void
   onNextMonth: () => void
   onSelectDate: (date: Date) => void
+  selectedDate?: string | null
 }
 
-export function Calendar({ month, workLogs, onPrevMonth, onNextMonth, onSelectDate }: CalendarProps) {
+export function Calendar({ month, workLogs, onPrevMonth, onNextMonth, onSelectDate, selectedDate }: CalendarProps) {
   const monthStart = new Date(month.getFullYear(), month.getMonth(), 1)
   const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0)
   
@@ -39,12 +40,14 @@ export function Calendar({ month, workLogs, onPrevMonth, onNextMonth, onSelectDa
         <div className="flex space-x-6">
           <button
             onClick={onPrevMonth}
+            aria-label="Mes anterior"
             className="text-accent hover:opacity-60 transition-opacity active:scale-90"
           >
             <ChevronLeft size={24} strokeWidth={2.5} />
           </button>
           <button
             onClick={onNextMonth}
+            aria-label="Mes siguiente"
             className="text-accent hover:opacity-60 transition-opacity active:scale-90"
           >
             <ChevronRight size={24} strokeWidth={2.5} />
@@ -69,15 +72,19 @@ export function Calendar({ month, workLogs, onPrevMonth, onNextMonth, onSelectDa
             const dayStr = format(day, 'yyyy-MM-dd')
             const isFuture = dayStr > todayStr
             const log = getWorkLogForDate(day)
-            const showDot = log && !isCurrentDay
+            const showDot = !!log
             
             return (
               <div key={day.toString()} className="flex flex-col items-center justify-start h-12">
                 <button
                   onClick={() => !isFuture && onSelectDate(day)}
                   disabled={isFuture}
+                  aria-label={`${format(day, 'EEEE d MMMM yyyy', { locale: es })}${log ? ', jornada registrada' : ', sin registro'}`}
+                  aria-current={isCurrentDay ? 'date' : undefined}
+                  aria-pressed={dayStr === selectedDate}
                   className={`
-                    relative w-10 h-10 rounded-full flex items-center justify-center text-[17px] leading-none
+                    relative w-full max-w-11 h-11 rounded-full flex items-center justify-center text-[17px] leading-none
+                    ${dayStr === selectedDate ? 'outline outline-2 outline-offset-2 outline-accent' : ''}
                     transition-all
                     ${isFuture ? 'text-ter opacity-20 cursor-default' : 'active:scale-[0.90] cursor-pointer'}
                     ${!isCurrentMonth && !isFuture ? 'text-ter opacity-50' : ''}

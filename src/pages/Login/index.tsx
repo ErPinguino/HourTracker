@@ -15,7 +15,7 @@ export function Login() {
   }, [user, loading, navigate])
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 h-screen w-full max-w-lg mx-auto bg-transparent">
+    <div className="flex flex-col items-center justify-center p-6 sm:p-8 min-h-[100dvh] w-full max-w-lg mx-auto bg-transparent">
       
       <div className="flex-1 flex flex-col items-center justify-center space-y-8 w-full mt-10">
         <div className="w-28 h-28 bg-gray-900 dark:bg-white text-white dark:text-black rounded-[2rem] flex items-center justify-center shadow-xl">

@@ -24,6 +24,8 @@
   }
 
   body {
+    margin: 0;
+    min-width: 0;
     background-color: var(--bg-color);
     color: var(--text-main);
     -webkit-tap-highlight-color: transparent;
@@ -36,6 +38,18 @@
   input, select, textarea {
     @apply bg-transparent outline-none ring-0;
   }
+}
+
+/* Shared mobile form sizing, including Safari's intrinsic time input width. */
+.day-form input { min-width: 0; min-height: 44px; font-size: 16px; }
+.day-form .grouped-list-item { gap: .75rem; padding-block: .5rem; }
+.day-form .grouped-list-item > div { min-width: 0; }
+.day-form input[type="time"] { max-width: 100%; }
+.day-form input[type="time"]::-webkit-date-and-time-value { text-align: right; }
+:where(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.day-dialog { scrollbar-gutter: stable; scroll-padding-block: 5rem; }
+@media (max-width: 375px) {
+  .day-form .grouped-list-item { padding-inline: .75rem; }
 }
 
 @layer utilities {

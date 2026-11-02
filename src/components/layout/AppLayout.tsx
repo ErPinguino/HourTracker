@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useOutlet } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { BottomNavigation } from './BottomNavigation'
 import { Sidebar } from './Sidebar'
@@ -12,6 +12,7 @@ export function AppLayout() {
   const { user } = useAuth()
   const { setTheme } = useTheme()
   const location = useLocation()
+  const outlet = useOutlet()
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -38,13 +39,13 @@ export function AppLayout() {
   }
 
   return (
-    <div className="h-screen w-full flex overflow-hidden">
+    <div className="h-[100dvh] w-full flex overflow-hidden">
       {/* Sidebar on Desktop */}
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative" id="main-scroll-container">
-        <PageTransition pageKey={location.pathname}><div className={`w-full max-w-2xl mx-auto flex-1 flex flex-col md:pb-8 ${isMainScreen ? 'pb-[calc(80px+env(safe-area-inset-bottom))]' : 'pb-0'}`}><Outlet /></div></PageTransition>
+      <div className="min-w-0 flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative" id="main-scroll-container">
+        <PageTransition pageKey={isMainScreen ? location.pathname : 'secondary'}><div className={`w-full max-w-2xl mx-auto flex-1 flex flex-col md:pb-8 ${isMainScreen ? 'pb-[calc(80px+env(safe-area-inset-bottom))]' : 'pb-0'}`}>{outlet}</div></PageTransition>
       </div>
 
       {/* BottomNav on Mobile */}

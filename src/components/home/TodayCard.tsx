@@ -38,11 +38,11 @@ export function TodayCard({ log, profile, onClick }: TodayCardProps) {
   return (
     <div
       onClick={onClick}
-      className="w-full bg-card border border-border rounded-[24px] shadow-[0_4px_16px_rgba(0,0,0,0.03)] cursor-pointer active:scale-[0.98] transition-all duration-300 overflow-hidden relative"
+      className="w-full text-left bg-card border border-border rounded-[24px] shadow-[0_4px_16px_rgba(0,0,0,0.03)] cursor-pointer active:scale-[0.98] transition-all duration-300 overflow-hidden relative"
     >
       {!isRegistered ? (
         /* ── Empty state ──────────────────────────────────────────────────── */
-        <div className="p-6 flex items-center justify-between">
+        <div className="p-4 sm:p-6 flex flex-wrap gap-3 items-center justify-between">
           <span className="text-[17px] text-sec font-medium">No has registrado hoy</span>
           <div className="flex items-center space-x-1 text-accent">
             <span className="text-[17px] font-medium">Añadir</span>
@@ -59,7 +59,7 @@ export function TodayCard({ log, profile, onClick }: TodayCardProps) {
             </span>
             <ChevronRight size={20} className="text-ter" />
           </div>
-          <span className="text-[54px] font-extrabold text-main leading-none tracking-tight mb-3">
+          <span className="text-[clamp(2rem,9vw,3.375rem)] break-all font-extrabold text-main leading-none tracking-tight mb-3">
             {formatWorkedMinutes(workedMinutes)}
           </span>
           <div className="text-[15px] text-sec font-medium">
@@ -76,7 +76,7 @@ export function TodayCard({ log, profile, onClick }: TodayCardProps) {
             </span>
             <ChevronRight size={20} className="text-ter" />
           </div>
-          <span className="text-[54px] font-extrabold text-main leading-none tracking-tight mb-3">
+          <span className="text-[clamp(2rem,9vw,3.375rem)] break-all font-extrabold text-main leading-none tracking-tight mb-3">
             {formatCurrency(dailyTotal)}
           </span>
           <div className="text-[15px] text-sec font-medium">

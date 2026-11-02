@@ -1,5 +1,9 @@
+import { normalizeTime, timeRegex } from './time.ts'
+
 export function calculateWorkedMinutes(startTime: string, endTime: string, breakMinutes: number): number {
-  if (!startTime || !endTime) return 0
+  startTime = normalizeTime(startTime)
+  endTime = normalizeTime(endTime)
+  if (!timeRegex.test(startTime) || !timeRegex.test(endTime) || !Number.isFinite(breakMinutes) || breakMinutes < 0) return 0
 
   const [startHours, startMins] = startTime.split(':').map(Number)
   const [endHours, endMins] = endTime.split(':').map(Number)

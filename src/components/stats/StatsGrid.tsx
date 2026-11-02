@@ -12,7 +12,7 @@ export function StatsGrid({ stats, currency }: StatsGridProps) {
   }
 
   const StatRow = ({ label, value, highlight = false }: { label: string, value: string, highlight?: boolean }) => (
-    <div className="grouped-list-item flex justify-between items-center py-3.5 px-4 bg-[var(--card-bg)]">
+    <div className="grouped-list-item flex justify-between gap-3 flex-wrap items-center py-3.5 px-4 bg-[var(--card-bg)]">
       <span className="text-[17px] text-gray-900 dark:text-white">{label}</span>
       <span className={`text-[17px] ${highlight ? 'text-blue-600 dark:text-blue-500 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
         {value}
@@ -28,7 +28,7 @@ export function StatsGrid({ stats, currency }: StatsGridProps) {
         <div className="bg-gradient-to-br from-gray-900 to-black dark:from-[#1c1c1e] dark:to-[#121212] rounded-[2rem] p-8 flex flex-col items-center justify-center text-white shadow-xl transform transition-all relative overflow-hidden">
           <div className="relative z-10 flex flex-col items-center">
             <span className="text-gray-400 text-[13px] font-semibold tracking-wider uppercase mb-2">Ganado este mes</span>
-            <span className="text-[3.5rem] leading-none font-extrabold tracking-tight mb-2">{formatCurrency(stats.totalPay)}</span>
+            <span className="text-[clamp(1.75rem,8vw,3.5rem)] break-all text-center leading-tight font-extrabold tracking-tight mb-2">{formatCurrency(stats.totalPay)}</span>
           </div>
         </div>
 
@@ -68,7 +68,7 @@ export function StatsGrid({ stats, currency }: StatsGridProps) {
       <div className="bg-gradient-to-br from-gray-900 to-black dark:from-[#1c1c1e] dark:to-[#121212] rounded-[2rem] p-8 flex flex-col items-center justify-center text-white shadow-xl transform transition-all relative overflow-hidden">
         <div className="relative z-10 flex flex-col items-center">
           <span className="text-gray-400 text-[13px] font-semibold tracking-wider uppercase mb-2">Total ganado</span>
-          <span className="text-[3.5rem] leading-none font-extrabold tracking-tight mb-2">{formatCurrency(stats.totalPay)}</span>
+          <span className="text-[clamp(1.75rem,8vw,3.5rem)] break-all text-center leading-tight font-extrabold tracking-tight mb-2">{formatCurrency(stats.totalPay)}</span>
         </div>
       </div>
 

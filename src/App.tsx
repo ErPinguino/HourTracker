@@ -20,7 +20,7 @@ function App() {
         <AuthProvider>
           <BrowserRouter>
             <PWAProvider>
-              <main className="min-h-screen max-w-md mx-auto w-full h-full flex flex-col relative transition-colors duration-300">
+              <main className="min-h-[100dvh] mx-auto w-full h-full flex flex-col relative transition-colors duration-300">
                 <EngineRunner />
                 <AppRoutes />
                 <PWAUpdater />
