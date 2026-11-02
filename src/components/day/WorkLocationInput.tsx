@@ -1,4 +1,4 @@
-import type { Ref } from 'react'
+import { useState, type Ref } from 'react'
 import { Combobox } from '@animate-ui/react/primitives/base-ui/combobox'
 import { Check, ChevronDown } from 'lucide-react'
 
@@ -15,11 +15,27 @@ interface Props {
 
 /** One editable value, shared by typing and selection from recent locations. */
 export function WorkLocationInput({ id, value, locations, onChange, onBlur, inputRef, disabled, invalid }: Props) {
-  return <Combobox.Root items={locations} inputValue={value} value={locations.includes(value) ? value : null}
-    onInputValueChange={(text, details) => { if (details.reason === 'input-change') onChange(text) }}
-    onValueChange={location => { if (location !== null) onChange(location) }} disabled={disabled}>
+  const [open, setOpen] = useState(false)
+  return <Combobox.Root items={locations} filter={null} openOnInputClick={false}
+    open={open && !disabled && locations.length > 0}
+    onOpenChange={(nextOpen, details) => {
+      // Only the trigger may open the list; every normal dismissal may close it.
+      if (nextOpen && details.reason !== 'trigger-press') {
+        details.cancel()
+        return
+      }
+      setOpen(nextOpen)
+    }}
+    inputValue={value} value={locations.includes(value) ? value : null}
+    onInputValueChange={(text, details) => {
+      if (details.reason === 'input-change') {
+        setOpen(false)
+        onChange(text)
+      }
+    }}
+    onValueChange={location => { if (location !== null) { onChange(location); setOpen(false) } }} disabled={disabled}>
     <div className="flex min-w-0 w-full items-center">
-      <Combobox.Input id={id} ref={inputRef} onBlur={onBlur} aria-invalid={invalid} autoComplete="off"
+      <Combobox.Input id={id} ref={inputRef} onBlur={onBlur} onPointerDown={() => setOpen(false)} aria-invalid={invalid} autoComplete="off"
         placeholder={locations.length ? 'Lugares recientes' : 'Opcional'}
         className="w-full min-w-0 bg-transparent text-right text-[17px] text-sec focus:outline-none" />
       {locations.length > 0 && <Combobox.Trigger aria-label="Lugares recientes" className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-sec focus-visible:ring-2 focus-visible:ring-accent"><ChevronDown size={18} /></Combobox.Trigger>}
